@@ -1,6 +1,6 @@
 package com.endurance.handler
 
-import com.endurance.function.checkEmptyUser
+import com.endurance.function.isNotEmptyUser
 import com.endurance.injector.Injector
 import com.endurance.model.IUserService
 import com.endurance.model.User
@@ -9,6 +9,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
+
 
 fun Route.userHandler(path: String) {
   val userService: IUserService = Injector.getUserService()
@@ -31,7 +32,7 @@ fun Route.userHandler(path: String) {
 
     post {
       val user = call.receiveOrNull() ?: User(0, "", "", "")
-      when (checkEmptyUser(user)) {
+      when (isNotEmptyUser(user)) {
         false -> call.respond(HttpStatusCode.BadRequest)
         true -> {
           userService.insertUser(user)
@@ -42,7 +43,7 @@ fun Route.userHandler(path: String) {
 
     put {
       val user = call.receiveOrNull() ?: User(0, "", "", "")
-      when (checkEmptyUser(user)) {
+      when (isNotEmptyUser(user)) {
         false -> call.respond(HttpStatusCode.BadRequest)
         true -> {
           userService.updateUser(user)

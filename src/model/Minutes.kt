@@ -11,7 +11,7 @@ data class Minutes(
   val time_stamp: String
 )
 
-interface IMinutes {
+interface IMinutesService {
   fun findMinutes(): List<Minutes>
   fun findMinutes(id: Int): Minutes
   fun insertMinutes(minutes: Minutes)

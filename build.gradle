@@ -38,4 +38,5 @@ dependencies {
     testImplementation "io.ktor:ktor-server-tests:$ktor_version"
     runtime group: "org.postgresql", name: "postgresql", version: "42.2.8"
     compile group: "com.zaxxer", name: "HikariCP", version: "3.4.1"
+    implementation 'junit:junit:4.12'
 }

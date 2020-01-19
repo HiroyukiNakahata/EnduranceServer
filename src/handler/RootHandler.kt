@@ -5,6 +5,7 @@ import io.ktor.http.ContentType
 import io.ktor.response.respondText
 import io.ktor.routing.*
 
+
 fun Route.rootHandler(path: String) {
   route(path) {
     get {

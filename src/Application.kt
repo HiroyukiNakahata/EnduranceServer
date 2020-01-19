@@ -1,6 +1,7 @@
 package com.endurance
 
 import com.endurance.handler.rootHandler
+import com.endurance.handler.userHandler
 import io.ktor.application.*
 import io.ktor.response.*
 import io.ktor.request.*
@@ -26,13 +27,14 @@ fun Application.module(testing: Boolean = false) {
     }
   }
 
-  install(StatusPages) {
-    exception<Throwable> {
-      call.respond(HttpStatusCode.InternalServerError)
-    }
-  }
+//  install(StatusPages) {
+//    exception<Throwable> {
+//      call.respond(HttpStatusCode.InternalServerError)
+//    }
+//  }
 
   routing {
     rootHandler("/")
+    userHandler("/api/user")
   }
 }

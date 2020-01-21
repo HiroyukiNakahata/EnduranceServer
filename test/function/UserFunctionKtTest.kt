@@ -1,6 +1,6 @@
 package function
 
-import com.endurance.function.isNotEmptyUser
+import com.endurance.function.isEmptyUser
 import com.endurance.model.User
 import org.junit.Test
 import org.hamcrest.core.Is.*
@@ -12,7 +12,7 @@ class UserFunctionKtTest {
     fun checkEmptyUser_1() {
         val user = User(0, "hoge", "fuga", "test@test.com")
         val expected = true
-        val actual = isNotEmptyUser(user)
+        val actual = isEmptyUser(user)
         assertThat(actual, `is`(expected))
     }
 
@@ -20,7 +20,7 @@ class UserFunctionKtTest {
     fun checkEmptyUser_2() {
         val user = User(0, "", "", "")
         val expected = false
-        val actual = isNotEmptyUser(user)
+        val actual = isEmptyUser(user)
         assertThat(actual, `is`(expected))
     }
 
@@ -28,7 +28,7 @@ class UserFunctionKtTest {
     fun checkEmptyUser_3() {
         val user = User(0, "", "hoge", "test@mail.com")
         val expected = false
-        val actual = isNotEmptyUser(user)
+        val actual = isEmptyUser(user)
         assertThat(actual, `is`(expected))
     }
 }

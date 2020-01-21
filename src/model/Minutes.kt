@@ -9,7 +9,9 @@ data class Minutes(
   val summary: String,
   val body_text: String,
   val time_stamp: String
-)
+) {
+  constructor() : this(0, 0, 0, "", "", "", "", "")
+}
 
 interface IMinutesService {
   fun findMinutes(): List<Minutes>

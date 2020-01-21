@@ -1,16 +1,19 @@
 package com.endurance
 
-import com.endurance.handler.projectHandler
-import com.endurance.handler.rootHandler
-import com.endurance.handler.userHandler
+import com.endurance.handler.*
 import io.ktor.application.Application
+import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
 import io.ktor.gson.gson
+import io.ktor.http.HttpStatusCode
 import io.ktor.request.path
+import io.ktor.response.respond
 import io.ktor.routing.routing
 import org.slf4j.event.Level
+import java.sql.SQLException
 
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -29,15 +32,20 @@ fun Application.module(testing: Boolean = false) {
     }
   }
 
-//  install(StatusPages) {
-//    exception<Throwable> {
-//      call.respond(HttpStatusCode.InternalServerError)
-//    }
-//  }
+  install(StatusPages) {
+    exception<SQLException> { cause ->
+      println(cause.message)
+      call.respond(HttpStatusCode.InternalServerError)
+    }
+  }
 
   routing {
     rootHandler("/")
     userHandler("/api/user")
     projectHandler("/api/project")
+    minutesHandler("/api/minutes")
+    pictureHandler("/api/picture")
+    attendeeHandler("/api/attendee")
+    todoHandler("/api/todo")
   }
 }

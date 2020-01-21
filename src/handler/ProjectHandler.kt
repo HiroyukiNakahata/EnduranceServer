@@ -1,10 +1,10 @@
 package com.endurance.handler
 
-import com.endurance.function.isNotEmptyProject
+import com.endurance.function.isEmptyProject
 import com.endurance.injector.Injector
-import io.ktor.routing.*
 import com.endurance.model.IProjectService
 import com.endurance.model.Project
+import io.ktor.routing.*
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
@@ -31,10 +31,10 @@ fun Route.projectHandler(path: String) {
     }
 
     post {
-      val project = call.receiveOrNull() ?: Project(0, "", "")
-      when (isNotEmptyProject(project)) {
-        false -> call.respond(HttpStatusCode.BadRequest)
-        true -> {
+      val project = call.receiveOrNull() ?: Project()
+      when {
+        isEmptyProject(project) -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
           projectService.insertProject(project)
           call.respond(project)
         }
@@ -42,10 +42,10 @@ fun Route.projectHandler(path: String) {
     }
 
     put {
-      val project = call.receiveOrNull() ?: Project(0, "", "")
-      when (isNotEmptyProject(project)) {
-        false -> call.respond(HttpStatusCode.BadRequest)
-        true -> {
+      val project = call.receiveOrNull() ?: Project()
+      when {
+        isEmptyProject(project) -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
           projectService.updateProject(project)
           call.respond(project)
         }

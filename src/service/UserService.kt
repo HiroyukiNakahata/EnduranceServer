@@ -2,7 +2,6 @@ package com.endurance.service
 
 import com.endurance.model.IUserService
 import com.endurance.model.User
-import java.sql.SQLException
 
 
 class UserService : IUserService {
@@ -17,16 +16,14 @@ class UserService : IUserService {
       ).use { ps ->
         ps.executeQuery().use { rows ->
           val users = mutableListOf<User>()
-          while (rows.next()) {
-            users.add(
-              User(
-                rows.getInt(1),
-                rows.getString(2),
-                rows.getString(3),
-                rows.getString(4)
-              )
+          while (rows.next()) users.add(
+            User(
+              rows.getInt(1),
+              rows.getString(2),
+              rows.getString(3),
+              rows.getString(4)
             )
-          }
+          )
           return users
         }
       }
@@ -44,16 +41,14 @@ class UserService : IUserService {
       ).use { ps ->
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
-          rows.next()
-          return try {
-            User(
+          return when {
+            rows.next() -> User(
               rows.getInt(1),
               rows.getString(2),
               rows.getString(3),
               rows.getString(4)
             )
-          } catch (e: SQLException) {
-            User(0, "", "", "")
+            else -> User()
           }
         }
       }

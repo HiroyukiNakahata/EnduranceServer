@@ -1,8 +1,7 @@
 package com.endurance.service
 
-import com.endurance.model.Project
 import com.endurance.model.IProjectService
-import java.sql.SQLException
+import com.endurance.model.Project
 
 
 class ProjectService : IProjectService {
@@ -17,15 +16,13 @@ class ProjectService : IProjectService {
       ).use { ps ->
         ps.executeQuery().use { rows ->
           val projects = mutableListOf<Project>()
-          while (rows.next()) {
-            projects.add(
-              Project(
-                rows.getInt(1),
-                rows.getString(2),
-                rows.getString(3)
-              )
+          while (rows.next()) projects.add(
+            Project(
+              rows.getInt(1),
+              rows.getString(2),
+              rows.getString(3)
             )
-          }
+          )
           return projects
         }
       }
@@ -43,15 +40,13 @@ class ProjectService : IProjectService {
       ).use { ps ->
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
-          rows.next()
-          return try {
-            Project(
+          return when {
+            rows.next() -> Project(
               rows.getInt(1),
               rows.getString(2),
               rows.getString(3)
             )
-          } catch (e: SQLException) {
-            Project(0, "", "")
+            else -> Project()
           }
         }
       }
@@ -66,9 +61,11 @@ class ProjectService : IProjectService {
         VALUES (?, ?)
       """
       ).use { ps ->
-        ps.setString(1, project.project_name)
-        ps.setString(2, project.client)
-        ps.execute()
+        ps.run {
+          setString(1, project.project_name)
+          setString(2, project.client)
+          execute()
+        }
       }
     }
   }
@@ -82,10 +79,12 @@ class ProjectService : IProjectService {
         WHERE project_id = ?
       """
       ).use { ps ->
-        ps.setString(1, project.project_name)
-        ps.setString(2, project.client)
-        ps.setInt(3, project.project_id)
-        ps.execute()
+        ps.run {
+          setString(1, project.project_name)
+          setString(2, project.client)
+          setInt(3, project.project_id)
+          execute()
+        }
       }
     }
   }
@@ -98,8 +97,10 @@ class ProjectService : IProjectService {
         WHERE project_id = ?
       """
       ).use { ps ->
-        ps.setInt(1, id)
-        ps.execute()
+        ps.run {
+          setInt(1, id)
+          execute()
+        }
       }
     }
   }

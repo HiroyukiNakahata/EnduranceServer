@@ -5,7 +5,9 @@ data class User(
   val family_name: String,
   val last_name: String,
   val mail_address: String
-)
+) {
+  constructor(): this(0, "", "", "")
+}
 
 interface IUserService {
   fun findUser(): List<User>

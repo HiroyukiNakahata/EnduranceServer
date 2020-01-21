@@ -1,53 +1,51 @@
 package com.endurance.handler
 
-import com.endurance.function.isEmptyUser
+import com.endurance.function.isEmptyTodo
 import com.endurance.injector.Injector
-import com.endurance.model.IUserService
-import com.endurance.model.User
+import com.endurance.model.Todo
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-
-fun Route.userHandler(path: String) {
-  val userService: IUserService = Injector.getUserService()
+fun Route.todoHandler(path: String) {
+  val todoService = Injector.getTodoService()
 
   route(path) {
     get {
-      val users = userService.findUser()
-      call.respond(users)
+      val todo = todoService.findTodo()
+      call.respond(todo)
     }
 
     get("/{id}") {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
-        else -> id.also {
-          val user = userService.findUser(it)
-          call.respond(user)
+        else -> {
+          val todo = todoService.findTodo(id)
+          call.respond(todo)
         }
       }
     }
 
     post {
-      val user = call.receiveOrNull() ?: User()
+      val todo = call.receiveOrNull() ?: Todo()
       when {
-        isEmptyUser(user) -> call.respond(HttpStatusCode.BadRequest)
+        isEmptyTodo(todo) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.insertUser(user)
-          call.respond(user)
+          todoService.insertTodo(todo)
+          call.respond(todo)
         }
       }
     }
 
     put {
-      val user = call.receiveOrNull() ?: User()
+      val todo = call.receiveOrNull() ?: Todo()
       when {
-        isEmptyUser(user) -> call.respond(HttpStatusCode.BadRequest)
+        isEmptyTodo(todo) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.updateUser(user)
-          call.respond(user)
+          todoService.updateTodo(todo)
+          call.respond(todo)
         }
       }
     }
@@ -56,7 +54,7 @@ fun Route.userHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.deleteUser(id)
+          todoService.deleteTodo(id)
           call.respond(HttpStatusCode.OK)
         }
       }

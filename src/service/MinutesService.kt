@@ -2,7 +2,6 @@ package com.endurance.service
 
 import com.endurance.model.IMinutesService
 import com.endurance.model.Minutes
-import java.sql.SQLException
 
 
 class MinutesService : IMinutesService {
@@ -17,20 +16,18 @@ class MinutesService : IMinutesService {
       ).use { ps ->
         ps.executeQuery().use { rows ->
           val minutes = mutableListOf<Minutes>()
-          while (rows.next()) {
-            minutes.add(
-              Minutes(
-                rows.getInt(1),
-                rows.getInt(2),
-                rows.getInt(3),
-                rows.getString(4),
-                rows.getString(5),
-                rows.getString(6),
-                rows.getString(7),
-                rows.getString(8)
-              )
+          while (rows.next()) minutes.add(
+            Minutes(
+              rows.getInt(1),
+              rows.getInt(2),
+              rows.getInt(3),
+              rows.getString(4),
+              rows.getString(5),
+              rows.getString(6),
+              rows.getString(7),
+              rows.getString(8)
             )
-          }
+          )
           return minutes
         }
       }
@@ -48,9 +45,8 @@ class MinutesService : IMinutesService {
       ).use { ps ->
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
-          rows.next()
-          return try {
-            Minutes(
+          return when {
+            rows.next() -> Minutes(
               rows.getInt(1),
               rows.getInt(2),
               rows.getInt(3),
@@ -60,8 +56,7 @@ class MinutesService : IMinutesService {
               rows.getString(7),
               rows.getString(8)
             )
-          } catch (e: SQLException) {
-            Minutes(0, 0, 0, "", "", "", "", "")
+            else -> Minutes()
           }
         }
       }

@@ -5,7 +5,9 @@ data class Attendee(
   val minutes_id: Int,
   val attendee_name: String,
   val organization: String
-)
+) {
+  constructor() : this(0, 0, "", "")
+}
 
 interface IAttendeeService {
   fun findAttendee(): List<Attendee>

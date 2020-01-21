@@ -4,7 +4,9 @@ data class Project(
   val project_id: Int,
   val project_name: String,
   val client: String
-)
+) {
+  constructor(): this(0, "", "")
+}
 
 interface IProjectService {
   fun findProject(): List<Project>

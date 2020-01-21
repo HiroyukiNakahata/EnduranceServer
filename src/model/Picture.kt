@@ -5,7 +5,9 @@ data class Picture(
   val minutes_id: Int,
   val picture_path: String,
   val time_stamp: String
-)
+) {
+  constructor(): this(0, 0, "", "")
+}
 
 interface IPictureService {
   fun findPicture(): List<Picture>

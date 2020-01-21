@@ -1,9 +1,12 @@
 package com.endurance.injector
 
-import com.endurance.model.IProjectService
-import com.endurance.model.IUserService
+import com.endurance.model.*
 import com.endurance.service.ProjectService
 import com.endurance.service.UserService
+import com.endurance.service.MinutesService
+import com.endurance.service.PictureService
+import com.endurance.service.AttendeeService
+import com.endurance.service.TodoService
 
 
 object Injector {
@@ -13,5 +16,21 @@ object Injector {
 
   fun getProjectService(): IProjectService {
     return ProjectService()
+  }
+
+  fun getMinutesService(): IMinutesService {
+    return MinutesService()
+  }
+
+  fun getPictureService(): IPictureService {
+    return PictureService()
+  }
+
+  fun getAttendeeService(): IAttendeeService {
+    return AttendeeService()
+  }
+
+  fun getTodoService(): ITodoService {
+    return TodoService()
   }
 }

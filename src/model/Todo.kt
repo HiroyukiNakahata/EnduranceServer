@@ -10,7 +10,9 @@ data class Todo(
   val start_time_stamp: String,
   val end_time_stamp: String,
   val status: Boolean
-)
+) {
+  constructor() : this(0, 0, 0, 0, "", "", "", "", false)
+}
 
 interface ITodoService {
   fun findTodo(): List<Todo>

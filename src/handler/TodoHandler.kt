@@ -9,12 +9,13 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
+
 fun Route.todoHandler(path: String) {
   val todoService = Injector.getTodoService()
 
   route(path) {
     get {
-      val todo = todoService.findTodo()
+      val todo = todoService.find()
       call.respond(todo)
     }
 
@@ -22,7 +23,7 @@ fun Route.todoHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          val todo = todoService.findTodo(id)
+          val todo = todoService.find(id)
           call.respond(todo)
         }
       }
@@ -33,7 +34,7 @@ fun Route.todoHandler(path: String) {
       when {
         isEmptyTodo(todo) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          todoService.insertTodo(todo)
+          todoService.insert(todo)
           call.respond(todo)
         }
       }
@@ -44,7 +45,7 @@ fun Route.todoHandler(path: String) {
       when {
         isEmptyTodo(todo) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          todoService.updateTodo(todo)
+          todoService.update(todo)
           call.respond(todo)
         }
       }
@@ -54,7 +55,7 @@ fun Route.todoHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          todoService.deleteTodo(id)
+          todoService.delete(id)
           call.respond(HttpStatusCode.OK)
         }
       }

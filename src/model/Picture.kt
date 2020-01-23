@@ -10,9 +10,9 @@ data class Picture(
 }
 
 interface IPictureService {
-  fun findPicture(): List<Picture>
-  fun findPicture(id: Int): Picture
-  fun insertPicture(picture: Picture)
-  fun updatePicture(picture: Picture)
-  fun deletePicture(id: Int)
+  fun find(): List<Picture>
+  fun find(id: Int): Picture
+  fun insert(picture: Picture)
+  fun update(picture: Picture)
+  fun delete(id: Int)
 }

@@ -9,9 +9,9 @@ data class Project(
 }
 
 interface IProjectService {
-  fun findProject(): List<Project>
-  fun findProject(id: Int): Project
-  fun insertProject(project: Project)
-  fun updateProject(project: Project)
-  fun deleteProject(id: Int)
+  fun find(): List<Project>
+  fun find(id: Int): Project
+  fun insert(project: Project)
+  fun update(project: Project)
+  fun delete(id: Int)
 }

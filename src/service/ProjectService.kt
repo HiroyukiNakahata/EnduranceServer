@@ -2,10 +2,11 @@ package com.endurance.service
 
 import com.endurance.model.IProjectService
 import com.endurance.model.Project
+import java.sql.ResultSet
 
 
 class ProjectService : IProjectService {
-  override fun findProject(): List<Project> {
+  override fun find(): List<Project> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -17,11 +18,7 @@ class ProjectService : IProjectService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> Project(
-                rows.getInt(1),
-                rows.getString(2),
-                rows.getString(3)
-              )
+              rows.next() -> rowsToProject(rows)
               else -> null
             }
           }.toList()
@@ -30,7 +27,7 @@ class ProjectService : IProjectService {
     }
   }
 
-  override fun findProject(id: Int): Project {
+  override fun find(id: Int): Project {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -42,11 +39,7 @@ class ProjectService : IProjectService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> Project(
-              rows.getInt(1),
-              rows.getString(2),
-              rows.getString(3)
-            )
+            rows.next() -> rowsToProject(rows)
             else -> Project()
           }
         }
@@ -54,7 +47,7 @@ class ProjectService : IProjectService {
     }
   }
 
-  override fun insertProject(project: Project) {
+  override fun insert(project: Project) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -71,7 +64,7 @@ class ProjectService : IProjectService {
     }
   }
 
-  override fun updateProject(project: Project) {
+  override fun update(project: Project) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -90,7 +83,7 @@ class ProjectService : IProjectService {
     }
   }
 
-  override fun deleteProject(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -105,4 +98,10 @@ class ProjectService : IProjectService {
       }
     }
   }
+
+  private fun rowsToProject(rows: ResultSet): Project = Project(
+    rows.getInt(1),
+    rows.getString(2),
+    rows.getString(3)
+  )
 }

@@ -14,7 +14,7 @@ fun Route.attendeeHandler(path: String) {
 
   route(path) {
     get {
-      val attendees = attendeeService.findAttendee()
+      val attendees = attendeeService.find()
       call.respond(attendees)
     }
 
@@ -22,7 +22,7 @@ fun Route.attendeeHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          val attendee = attendeeService.findAttendee(id)
+          val attendee = attendeeService.find(id)
           call.respond(attendee)
         }
       }
@@ -33,7 +33,7 @@ fun Route.attendeeHandler(path: String) {
       when {
         isEmptyAttendee(attendee) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          attendeeService.insertAttendee(attendee)
+          attendeeService.insert(attendee)
           call.respond(attendee)
         }
       }
@@ -44,7 +44,7 @@ fun Route.attendeeHandler(path: String) {
       when {
         isEmptyAttendee(attendee) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          attendeeService.updateAttendee(attendee)
+          attendeeService.update(attendee)
           call.respond(attendee)
         }
       }
@@ -54,7 +54,7 @@ fun Route.attendeeHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          attendeeService.deleteAttendee(id)
+          attendeeService.delete(id)
           call.respond(HttpStatusCode.OK)
         }
       }

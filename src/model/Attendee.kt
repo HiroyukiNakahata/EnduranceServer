@@ -10,9 +10,9 @@ data class Attendee(
 }
 
 interface IAttendeeService {
-  fun findAttendee(): List<Attendee>
-  fun findAttendee(id: Int): Attendee
-  fun insertAttendee(attendee: Attendee)
-  fun updateAttendee(attendee: Attendee)
-  fun deleteAttendee(id: Int)
+  fun find(): List<Attendee>
+  fun find(id: Int): Attendee
+  fun insert(attendee: Attendee)
+  fun update(attendee: Attendee)
+  fun delete(id: Int)
 }

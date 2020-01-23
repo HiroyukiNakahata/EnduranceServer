@@ -15,9 +15,9 @@ data class Todo(
 }
 
 interface ITodoService {
-  fun findTodo(): List<Todo>
-  fun findTodo(id: Int): Todo
-  fun insertTodo(todo: Todo)
-  fun updateTodo(todo: Todo)
-  fun deleteTodo(id: Int)
+  fun find(): List<Todo>
+  fun find(id: Int): Todo
+  fun insert(todo: Todo)
+  fun update(todo: Todo)
+  fun delete(id: Int)
 }

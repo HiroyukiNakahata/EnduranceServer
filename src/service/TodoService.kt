@@ -2,10 +2,11 @@ package com.endurance.service
 
 import com.endurance.model.Todo
 import com.endurance.model.ITodoService
+import java.sql.ResultSet
 
 
 class TodoService : ITodoService {
-  override fun findTodo(): List<Todo> {
+  override fun find(): List<Todo> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -25,17 +26,7 @@ class TodoService : ITodoService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> Todo(
-                rows.getInt(1),
-                rows.getInt(2),
-                rows.getInt(3),
-                rows.getInt(4),
-                rows.getString(5),
-                rows.getString(6),
-                rows.getString(7),
-                rows.getString(8),
-                rows.getBoolean(9)
-              )
+              rows.next() -> rowsToTodo(rows)
               else -> null
             }
           }.toList()
@@ -44,7 +35,7 @@ class TodoService : ITodoService {
     }
   }
 
-  override fun findTodo(id: Int): Todo {
+  override fun find(id: Int): Todo {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -64,17 +55,7 @@ class TodoService : ITodoService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> Todo(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getInt(3),
-              rows.getInt(4),
-              rows.getString(5),
-              rows.getString(6),
-              rows.getString(7),
-              rows.getString(8),
-              rows.getBoolean(9)
-            )
+            rows.next() -> rowsToTodo(rows)
             else -> Todo()
           }
         }
@@ -82,7 +63,7 @@ class TodoService : ITodoService {
     }
   }
 
-  override fun insertTodo(todo: Todo) {
+  override fun insert(todo: Todo) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -113,7 +94,7 @@ class TodoService : ITodoService {
     }
   }
 
-  override fun updateTodo(todo: Todo) {
+  override fun update(todo: Todo) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -145,7 +126,7 @@ class TodoService : ITodoService {
     }
   }
 
-  override fun deleteTodo(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -160,4 +141,16 @@ class TodoService : ITodoService {
       }
     }
   }
+
+  private fun rowsToTodo(rows: ResultSet): Todo = Todo(
+    rows.getInt(1),
+    rows.getInt(2),
+    rows.getInt(3),
+    rows.getInt(4),
+    rows.getString(5),
+    rows.getString(6),
+    rows.getString(7),
+    rows.getString(8),
+    rows.getBoolean(9)
+  )
 }

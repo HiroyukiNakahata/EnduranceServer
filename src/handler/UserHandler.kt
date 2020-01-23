@@ -16,7 +16,7 @@ fun Route.userHandler(path: String) {
 
   route(path) {
     get {
-      val users = userService.findUser()
+      val users = userService.find()
       call.respond(users)
     }
 
@@ -24,7 +24,7 @@ fun Route.userHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> id.also {
-          val user = userService.findUser(it)
+          val user = userService.find(it)
           call.respond(user)
         }
       }
@@ -35,7 +35,7 @@ fun Route.userHandler(path: String) {
       when {
         isEmptyUser(user) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.insertUser(user)
+          userService.insert(user)
           call.respond(user)
         }
       }
@@ -46,7 +46,7 @@ fun Route.userHandler(path: String) {
       when {
         isEmptyUser(user) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.updateUser(user)
+          userService.update(user)
           call.respond(user)
         }
       }
@@ -56,7 +56,7 @@ fun Route.userHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          userService.deleteUser(id)
+          userService.delete(id)
           call.respond(HttpStatusCode.OK)
         }
       }

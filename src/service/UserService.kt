@@ -2,10 +2,11 @@ package com.endurance.service
 
 import com.endurance.model.IUserService
 import com.endurance.model.User
+import java.sql.ResultSet
 
 
 class UserService : IUserService {
-  override fun findUser(): List<User> {
+  override fun find(): List<User> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -17,12 +18,7 @@ class UserService : IUserService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> User(
-                rows.getInt(1),
-                rows.getString(2),
-                rows.getString(3),
-                rows.getString(4)
-              )
+              rows.next() -> rowsToUser(rows)
               else -> null
             }
           }.toList()
@@ -31,7 +27,7 @@ class UserService : IUserService {
     }
   }
 
-  override fun findUser(id: Int): User {
+  override fun find(id: Int): User {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -43,12 +39,7 @@ class UserService : IUserService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> User(
-              rows.getInt(1),
-              rows.getString(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
+            rows.next() -> rowsToUser(rows)
             else -> User()
           }
         }
@@ -56,7 +47,7 @@ class UserService : IUserService {
     }
   }
 
-  override fun insertUser(user: User) {
+  override fun insert(user: User) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -78,7 +69,7 @@ class UserService : IUserService {
     }
   }
 
-  override fun updateUser(user: User) {
+  override fun update(user: User) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -98,7 +89,7 @@ class UserService : IUserService {
     }
   }
 
-  override fun deleteUser(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -113,4 +104,11 @@ class UserService : IUserService {
       }
     }
   }
+
+  private fun rowsToUser(rows: ResultSet): User = User(
+    rows.getInt(1),
+    rows.getString(2),
+    rows.getString(3),
+    rows.getString(4)
+  )
 }

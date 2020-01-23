@@ -16,7 +16,7 @@ fun Route.projectHandler(path: String) {
 
   route(path) {
     get {
-      val projects = projectService.findProject()
+      val projects = projectService.find()
       call.respond(projects)
     }
 
@@ -24,7 +24,7 @@ fun Route.projectHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          val project = projectService.findProject(id)
+          val project = projectService.find(id)
           call.respond(project)
         }
       }
@@ -35,7 +35,7 @@ fun Route.projectHandler(path: String) {
       when {
         isEmptyProject(project) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          projectService.insertProject(project)
+          projectService.insert(project)
           call.respond(project)
         }
       }
@@ -46,7 +46,7 @@ fun Route.projectHandler(path: String) {
       when {
         isEmptyProject(project) -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          projectService.updateProject(project)
+          projectService.update(project)
           call.respond(project)
         }
       }
@@ -56,7 +56,7 @@ fun Route.projectHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          projectService.deleteProject(id)
+          projectService.delete(id)
           call.respond(HttpStatusCode.OK)
         }
       }

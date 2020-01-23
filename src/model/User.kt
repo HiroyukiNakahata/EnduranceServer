@@ -10,9 +10,9 @@ data class User(
 }
 
 interface IUserService {
-  fun findUser(): List<User>
-  fun findUser(id: Int): User
-  fun insertUser(user: User)
-  fun updateUser(user: User)
-  fun deleteUser(id: Int)
+  fun find(): List<User>
+  fun find(id: Int): User
+  fun insert(user: User)
+  fun update(user: User)
+  fun delete(id: Int)
 }

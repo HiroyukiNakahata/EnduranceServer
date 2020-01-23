@@ -2,10 +2,11 @@ package com.endurance.service
 
 import com.endurance.model.Picture
 import com.endurance.model.IPictureService
+import java.sql.ResultSet
 
 
 class PictureService : IPictureService {
-  override fun findPicture(): List<Picture> {
+  override fun find(): List<Picture> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -17,12 +18,7 @@ class PictureService : IPictureService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> Picture(
-                rows.getInt(1),
-                rows.getInt(2),
-                rows.getString(3),
-                rows.getString(4)
-              )
+              rows.next() -> rowsToPicture(rows)
               else -> null
             }
           }.toList()
@@ -31,7 +27,7 @@ class PictureService : IPictureService {
     }
   }
 
-  override fun findPicture(id: Int): Picture {
+  override fun find(id: Int): Picture {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -43,12 +39,7 @@ class PictureService : IPictureService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> Picture(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
+            rows.next() -> rowsToPicture(rows)
             else -> Picture()
           }
         }
@@ -56,7 +47,7 @@ class PictureService : IPictureService {
     }
   }
 
-  override fun insertPicture(picture: Picture) {
+  override fun insert(picture: Picture) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -73,7 +64,7 @@ class PictureService : IPictureService {
     }
   }
 
-  override fun updatePicture(picture: Picture) {
+  override fun update(picture: Picture) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -92,7 +83,7 @@ class PictureService : IPictureService {
     }
   }
 
-  override fun deletePicture(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -107,4 +98,11 @@ class PictureService : IPictureService {
       }
     }
   }
+
+  private fun rowsToPicture(rows: ResultSet): Picture = Picture(
+    rows.getInt(1),
+    rows.getInt(2),
+    rows.getString(3),
+    rows.getString(4)
+  )
 }

@@ -1,11 +1,14 @@
 package com.endurance.service
 
 import com.endurance.model.IMinutesService
+import com.endurance.model.IMinutesSummaryService
 import com.endurance.model.Minutes
+import com.endurance.model.MinutesSummary
+import java.sql.ResultSet
 
 
 class MinutesService : IMinutesService {
-  override fun findMinutes(): List<Minutes> {
+  override fun find(): List<Minutes> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -17,16 +20,7 @@ class MinutesService : IMinutesService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> Minutes(
-                rows.getInt(1),
-                rows.getInt(2),
-                rows.getInt(3),
-                rows.getString(4),
-                rows.getString(5),
-                rows.getString(6),
-                rows.getString(7),
-                rows.getString(8)
-              )
+              rows.next() -> rowsToMinutes(rows)
               else -> null
             }
           }.toList()
@@ -35,7 +29,7 @@ class MinutesService : IMinutesService {
     }
   }
 
-  override fun findMinutes(id: Int): Minutes {
+  override fun find(id: Int): Minutes {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -47,16 +41,7 @@ class MinutesService : IMinutesService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> Minutes(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getInt(3),
-              rows.getString(4),
-              rows.getString(5),
-              rows.getString(6),
-              rows.getString(7),
-              rows.getString(8)
-            )
+            rows.next() -> rowsToMinutes(rows)
             else -> Minutes()
           }
         }
@@ -64,7 +49,7 @@ class MinutesService : IMinutesService {
     }
   }
 
-  override fun insertMinutes(minutes: Minutes) {
+  override fun insert(minutes: Minutes) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -85,7 +70,7 @@ class MinutesService : IMinutesService {
     }
   }
 
-  override fun updateMinutes(minutes: Minutes) {
+  override fun update(minutes: Minutes) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -108,7 +93,7 @@ class MinutesService : IMinutesService {
     }
   }
 
-  override fun deleteMinutes(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -123,4 +108,236 @@ class MinutesService : IMinutesService {
       }
     }
   }
+
+  private fun rowsToMinutes(rows: ResultSet): Minutes = Minutes(
+    rows.getInt(1),
+    rows.getInt(2),
+    rows.getInt(3),
+    rows.getString(4),
+    rows.getString(5),
+    rows.getString(6),
+    rows.getString(7),
+    rows.getString(8)
+  )
+}
+
+
+class MinutesSummaryService : IMinutesSummaryService {
+  override fun find(): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        ORDER BY m.minutes_id
+      """
+      ).use { ps ->
+        ps.executeQuery().use { rows ->
+          return generateSequence {
+            when {
+              rows.next() -> rowsToSummary(rows)
+              else -> null
+            }
+          }.toList()
+        }
+      }
+    }
+  }
+
+  override fun find(limit: Int, offset: Int): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        ORDER BY m.minutes_id
+        LIMIT ? OFFSET ?
+      """
+      ).use { ps ->
+        ps.run {
+          setInt(1, limit)
+          setInt(2, offset)
+          executeQuery().use { rows ->
+            return generateSequence {
+              when {
+                rows.next() -> rowsToSummary(rows)
+                else -> null
+              }
+            }.toList()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        WHERE u.user_id = ?
+        ORDER BY m.minutes_id
+      """
+      ).use { ps ->
+        ps.run {
+          setInt(1, userId)
+          executeQuery().use { rows ->
+            return generateSequence {
+              when {
+                rows.next() -> rowsToSummary(rows)
+                else -> null
+              }
+            }.toList()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int, limit: Int, offset: Int): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        WHERE u.user_id = ?
+        ORDER BY m.minutes_id
+        LIMIT ? OFFSET ?
+      """
+      ).use { ps ->
+        ps.run {
+          setInt(1, userId)
+          setInt(2, limit)
+          setInt(3, offset)
+          executeQuery().use { rows ->
+            return generateSequence {
+              when {
+                rows.next() -> rowsToSummary(rows)
+                else -> null
+              }
+            }.toList()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByProject(projectId: Int): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        WHERE p.project_id = ?
+        ORDER BY m.minutes_id
+      """
+      ).use { ps ->
+        ps.run {
+          setInt(1, projectId)
+          executeQuery().use { rows ->
+            return generateSequence {
+              when {
+                rows.next() -> rowsToSummary(rows)
+                else -> null
+              }
+            }.toList()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByProject(projectId: Int, limit: Int, offset: Int): List<MinutesSummary> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m.minutes_id,
+               u.family_name,
+               p.project_name,
+               p.client,
+               m.place,
+               m.theme,
+               m.summary,
+               m.time_stamp
+        FROM minutes m 
+        INNER JOIN project p USING (project_id)
+        INNER JOIN "user" u USING (user_id)
+        WHERE p.project_id = ?
+        ORDER BY m.minutes_id
+        LIMIT ? OFFSET ?
+      """
+      ).use { ps ->
+        ps.run {
+          setInt(1, projectId)
+          setInt(2, limit)
+          setInt(3, offset)
+          executeQuery().use { rows ->
+            return generateSequence {
+              when {
+                rows.next() -> rowsToSummary(rows)
+                else -> null
+              }
+            }.toList()
+          }
+        }
+      }
+    }
+  }
+
+  private fun rowsToSummary(rows: ResultSet): MinutesSummary = MinutesSummary(
+    rows.getInt(1),
+    rows.getString(2),
+    rows.getString(3),
+    rows.getString(4),
+    rows.getString(5),
+    rows.getString(6),
+    rows.getString(7),
+    rows.getString(8)
+  )
 }

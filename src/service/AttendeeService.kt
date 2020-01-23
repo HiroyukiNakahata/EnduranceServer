@@ -2,10 +2,11 @@ package com.endurance.service
 
 import com.endurance.model.IAttendeeService
 import com.endurance.model.Attendee
+import java.sql.ResultSet
 
 
 class AttendeeService : IAttendeeService {
-  override fun findAttendee(): List<Attendee> {
+  override fun find(): List<Attendee> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -20,12 +21,7 @@ class AttendeeService : IAttendeeService {
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
-              rows.next() -> Attendee(
-                rows.getInt(1),
-                rows.getInt(2),
-                rows.getString(3),
-                rows.getString(4)
-              )
+              rows.next() -> rowsToAttendee(rows)
               else -> null
             }
           }.toList()
@@ -34,11 +30,14 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun findAttendee(id: Int): Attendee {
+  override fun find(id: Int): Attendee {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        SELECT attendee_id, minutes_id, attendee_name, organization
+        SELECT attendee_id,
+               minutes_id,
+               attendee_name,
+               organization
         FROM attendee
         WHERE attendee_id = ?
       """
@@ -46,12 +45,7 @@ class AttendeeService : IAttendeeService {
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
-            rows.next() -> Attendee(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
+            rows.next() -> rowsToAttendee(rows)
             else -> Attendee()
           }
         }
@@ -59,7 +53,7 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun insertAttendee(attendee: Attendee) {
+  override fun insert(attendee: Attendee) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -77,7 +71,7 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun updateAttendee(attendee: Attendee) {
+  override fun update(attendee: Attendee) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -97,7 +91,7 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun deleteAttendee(id: Int) {
+  override fun delete(id: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -112,4 +106,11 @@ class AttendeeService : IAttendeeService {
       }
     }
   }
+
+  private fun rowsToAttendee(rows: ResultSet): Attendee = Attendee(
+    rows.getInt(1),
+    rows.getInt(2),
+    rows.getString(3),
+    rows.getString(4)
+  )
 }

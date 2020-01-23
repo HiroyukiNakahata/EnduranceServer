@@ -21,7 +21,7 @@ fun Route.pictureHandler(path: String) {
 
   route(path) {
     get {
-      val pictures = pictureService.findPicture()
+      val pictures = pictureService.find()
       call.respond(pictures)
     }
 
@@ -29,8 +29,11 @@ fun Route.pictureHandler(path: String) {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          val picture = pictureService.findPicture(id)
-          call.respond(picture)
+          val picture = pictureService.find(id)
+          when (picture.picture_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(picture)
+          }
         }
       }
     }
@@ -64,7 +67,7 @@ fun Route.pictureHandler(path: String) {
             }
           }
 
-          pictureService.insertPicture(Picture(0, id, fileName, ""))
+          pictureService.insert(Picture(0, id, fileName, ""))
         }
 
       multiPartAll.forEach { part -> part.dispose() }

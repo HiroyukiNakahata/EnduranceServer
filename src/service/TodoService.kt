@@ -23,21 +23,22 @@ class TodoService : ITodoService {
       """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val todo = mutableListOf<Todo>()
-          while (rows.next()) todo.add(
-            Todo(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getInt(3),
-              rows.getInt(4),
-              rows.getString(5),
-              rows.getString(6),
-              rows.getString(7),
-              rows.getString(8),
-              rows.getBoolean(9)
-            )
-          )
-          return todo
+          return generateSequence {
+            when {
+              rows.next() -> Todo(
+                rows.getInt(1),
+                rows.getInt(2),
+                rows.getInt(3),
+                rows.getInt(4),
+                rows.getString(5),
+                rows.getString(6),
+                rows.getString(7),
+                rows.getString(8),
+                rows.getBoolean(9)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

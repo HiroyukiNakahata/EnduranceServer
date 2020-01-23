@@ -15,16 +15,17 @@ class UserService : IUserService {
       """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val users = mutableListOf<User>()
-          while (rows.next()) users.add(
-            User(
-              rows.getInt(1),
-              rows.getString(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
-          )
-          return users
+          return generateSequence {
+            when {
+              rows.next() -> User(
+                rows.getInt(1),
+                rows.getString(2),
+                rows.getString(3),
+                rows.getString(4)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

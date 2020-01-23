@@ -15,20 +15,21 @@ class MinutesService : IMinutesService {
       """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val minutes = mutableListOf<Minutes>()
-          while (rows.next()) minutes.add(
-            Minutes(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getInt(3),
-              rows.getString(4),
-              rows.getString(5),
-              rows.getString(6),
-              rows.getString(7),
-              rows.getString(8)
-            )
-          )
-          return minutes
+          return generateSequence {
+            when {
+              rows.next() -> Minutes(
+                rows.getInt(1),
+                rows.getInt(2),
+                rows.getInt(3),
+                rows.getString(4),
+                rows.getString(5),
+                rows.getString(6),
+                rows.getString(7),
+                rows.getString(8)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

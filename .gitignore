@@ -3,8 +3,10 @@
 /out
 /build
 /upload
+
 *.iml
 *.ipr
 *.iws
+*.log
 
 !.gitkeep

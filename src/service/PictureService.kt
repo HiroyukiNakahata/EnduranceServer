@@ -15,16 +15,17 @@ class PictureService : IPictureService {
       """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val pictures = mutableListOf<Picture>()
-          while (rows.next()) pictures.add(
-            Picture(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
-          )
-          return pictures
+          return generateSequence {
+            when {
+              rows.next() -> Picture(
+                rows.getInt(1),
+                rows.getInt(2),
+                rows.getString(3),
+                rows.getString(4)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

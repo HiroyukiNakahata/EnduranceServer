@@ -15,15 +15,16 @@ class ProjectService : IProjectService {
       """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val projects = mutableListOf<Project>()
-          while (rows.next()) projects.add(
-            Project(
-              rows.getInt(1),
-              rows.getString(2),
-              rows.getString(3)
-            )
-          )
-          return projects
+          return generateSequence {
+            when {
+              rows.next() -> Project(
+                rows.getInt(1),
+                rows.getString(2),
+                rows.getString(3)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

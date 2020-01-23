@@ -9,22 +9,26 @@ class AttendeeService : IAttendeeService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        SELECT attendee_id, minutes_id, attendee_name, organization
+        SELECT attendee_id,
+               minutes_id,
+               attendee_name,
+               organization
         FROM attendee
         ORDER BY attendee_id
         """
       ).use { ps ->
         ps.executeQuery().use { rows ->
-          val attendee = mutableListOf<Attendee>()
-          while (rows.next()) attendee.add(
-            Attendee(
-              rows.getInt(1),
-              rows.getInt(2),
-              rows.getString(3),
-              rows.getString(4)
-            )
-          )
-          return attendee
+          return generateSequence {
+            when {
+              rows.next() -> Attendee(
+                rows.getInt(1),
+                rows.getInt(2),
+                rows.getString(3),
+                rows.getString(4)
+              )
+              else -> null
+            }
+          }.toList()
         }
       }
     }

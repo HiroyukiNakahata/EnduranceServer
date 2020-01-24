@@ -23,9 +23,12 @@ fun Route.userHandler(path: String) {
     get("/{id}") {
       when (val id = call.parameters["id"]?.toIntOrNull()) {
         null -> call.respond(HttpStatusCode.BadRequest)
-        else -> id.also {
-          val user = userService.find(it)
-          call.respond(user)
+        else -> {
+          val user = userService.find(id)
+          when (user.user_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(user)
+          }
         }
       }
     }

@@ -26,7 +26,10 @@ fun Route.minutesHandler(path: String) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
           val minutes = minutesService.find(id)
-          call.respond(minutes)
+          when (minutes.minutes_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(minutes)
+          }
         }
       }
     }

@@ -24,7 +24,10 @@ fun Route.todoHandler(path: String) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
           val todo = todoService.find(id)
-          call.respond(todo)
+          when (todo.todo_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(todo)
+          }
         }
       }
     }

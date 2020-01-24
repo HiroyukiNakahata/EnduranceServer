@@ -137,7 +137,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.time_stamp
         FROM minutes m 
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         ORDER BY m.minutes_id
       """
       ).use { ps ->
@@ -167,7 +167,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.time_stamp
         FROM minutes m 
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         ORDER BY m.minutes_id
         LIMIT ? OFFSET ?
       """
@@ -200,9 +200,9 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.theme,
                m.summary,
                m.time_stamp
-        FROM minutes m 
+        FROM minutes m        
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         WHERE u.user_id = ?
         ORDER BY m.minutes_id
       """
@@ -236,7 +236,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.time_stamp
         FROM minutes m 
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         WHERE u.user_id = ?
         ORDER BY m.minutes_id
         LIMIT ? OFFSET ?
@@ -273,7 +273,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.time_stamp
         FROM minutes m 
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         WHERE p.project_id = ?
         ORDER BY m.minutes_id
       """
@@ -307,7 +307,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.time_stamp
         FROM minutes m 
         INNER JOIN project p USING (project_id)
-        INNER JOIN "user" u USING (user_id)
+        INNER JOIN users u USING (user_id)
         WHERE p.project_id = ?
         ORDER BY m.minutes_id
         LIMIT ? OFFSET ?

@@ -11,7 +11,7 @@ class UserService : IUserService {
       con.prepareStatement(
         """
         SELECT user_id, family_name, last_name, mail_address
-        FROM "user"
+        FROM users
         ORDER BY user_id
       """
       ).use { ps ->
@@ -32,7 +32,7 @@ class UserService : IUserService {
       con.prepareStatement(
         """
         SELECT user_id, family_name, last_name, mail_address
-        FROM "user"
+        FROM users
         WHERE user_id = ?
       """
       ).use { ps ->
@@ -51,7 +51,7 @@ class UserService : IUserService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        INSERT INTO "user"(family_name, last_name, mail_address)
+        INSERT INTO users(family_name, last_name, mail_address)
         VALUES (?, ?, ?)
         ON CONFLICT (mail_address)
         DO UPDATE SET family_name=?, last_name=?
@@ -73,9 +73,9 @@ class UserService : IUserService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        UPDATE "user"
-        SET family_name=?, last_name=?, mail_address=?
-        WHERE user_id=?
+        UPDATE users
+        SET family_name = ?, last_name = ?, mail_address = ?
+        WHERE user_id = ?
       """
       ).use { ps ->
         ps.run {
@@ -93,8 +93,8 @@ class UserService : IUserService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        DELETE FROM "user"
-        WHERE user_id=?
+        DELETE FROM users
+        WHERE user_id = ?
       """
       ).use { ps ->
         ps.run {

@@ -23,7 +23,10 @@ fun Route.attendeeHandler(path: String) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
           val attendee = attendeeService.find(id)
-          call.respond(attendee)
+          when (attendee.attendee_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(attendee)
+          }
         }
       }
     }

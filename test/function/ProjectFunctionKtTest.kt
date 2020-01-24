@@ -12,7 +12,7 @@ class ProjectFunctionKtTest {
   fun isNotEmptyProject_1() {
     val project = Project(0, "test", "hoge")
     val actual = isEmptyProject(project)
-    val expected = true
+    val expected = false
     assertThat(actual, `is`(expected))
   }
 
@@ -20,7 +20,7 @@ class ProjectFunctionKtTest {
   fun isNotEmptyProject_2() {
     val project = Project(0, "", "")
     val actual = isEmptyProject(project)
-    val expected = false
+    val expected = true
     assertThat(actual, `is`(expected))
   }
 
@@ -28,7 +28,7 @@ class ProjectFunctionKtTest {
   fun isNotEmptyProject_3() {
     val project = Project(0, "", "hoge")
     val actual = isEmptyProject(project)
-    val expected = false
+    val expected = true
     assertThat(actual, `is`(expected))
   }
 }

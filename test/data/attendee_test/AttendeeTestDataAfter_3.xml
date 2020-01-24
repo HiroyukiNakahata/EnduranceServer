@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <attendee
+            attendee_id="2"
+            minutes_id="1"
+            attendee_name="hoge"
+            organization="gumi"
+    />
+</dataset>

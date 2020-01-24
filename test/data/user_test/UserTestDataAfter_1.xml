@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <users
+            user_id="1"
+            family_name="hiroyuki"
+            last_name="nakahata"
+            mail_address="nakahata@gumi.co.jp"
+    />
+    <users
+            user_id="2"
+            family_name="fizz"
+            last_name="buzz"
+            mail_address="fizzbuzz@gumi.co.jp"
+    />
+    <users
+            user_id="3"
+            family_name="hoge"
+            last_name="fuga"
+            mail_address="hogehoge@gumi.co.jp"
+    />
+</dataset>

@@ -25,7 +25,10 @@ fun Route.projectHandler(path: String) {
         null -> call.respond(HttpStatusCode.BadRequest)
         else -> {
           val project = projectService.find(id)
-          call.respond(project)
+          when (project.project_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(project)
+          }
         }
       }
     }

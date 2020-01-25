@@ -42,12 +42,12 @@ class UserServiceTest {
     val actual = userService.find()
     val expected = User(
       user_id = 1,
-      family_name = "hiroyuki",
+      first_name = "hiroyuki",
       last_name = "nakahata",
       mail_address = "nakahata@gumi.co.jp"
     )
     assertThat(actual[0].user_id, `is`(expected.user_id))
-    assertThat(actual[0].family_name, `is`(expected.family_name))
+    assertThat(actual[0].first_name, `is`(expected.first_name))
     assertThat(actual[0].last_name, `is`(expected.last_name))
     assertThat(actual[0].mail_address, `is`(expected.mail_address))
   }
@@ -57,12 +57,12 @@ class UserServiceTest {
     val actual = userService.find(1)
     val expected = User(
       user_id = 1,
-      family_name = "hiroyuki",
+      first_name = "hiroyuki",
       last_name = "nakahata",
       mail_address = "nakahata@gumi.co.jp"
     )
     assertThat(actual.user_id, `is`(expected.user_id))
-    assertThat(actual.family_name, `is`(expected.family_name))
+    assertThat(actual.first_name, `is`(expected.first_name))
     assertThat(actual.last_name, `is`(expected.last_name))
     assertThat(actual.mail_address, `is`(expected.mail_address))
   }
@@ -71,7 +71,7 @@ class UserServiceTest {
   fun insert() {
     val user = User(
       user_id = 2,
-      family_name = "hoge",
+      first_name = "hoge",
       last_name = "fuga",
       mail_address = "hogehoge@gumi.co.jp"
     )
@@ -97,7 +97,7 @@ class UserServiceTest {
   fun update() {
     val user = User(
       user_id = 1,
-      family_name = "test",
+      first_name = "test",
       last_name = "sample",
       mail_address = "sample@gumi.co.jp"
     )

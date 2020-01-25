@@ -4,13 +4,12 @@ import com.endurance.model.IUserService
 import com.endurance.model.User
 import java.sql.ResultSet
 
-
 class UserService : IUserService {
   override fun find(): List<User> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        SELECT user_id, family_name, last_name, mail_address
+        SELECT user_id, first_name, last_name, mail_address
         FROM users
         ORDER BY user_id
       """
@@ -31,7 +30,7 @@ class UserService : IUserService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        SELECT user_id, family_name, last_name, mail_address
+        SELECT user_id, first_name, last_name, mail_address
         FROM users
         WHERE user_id = ?
       """
@@ -51,17 +50,17 @@ class UserService : IUserService {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        INSERT INTO users(family_name, last_name, mail_address)
+        INSERT INTO users(first_name, last_name, mail_address)
         VALUES (?, ?, ?)
         ON CONFLICT (mail_address)
-        DO UPDATE SET family_name=?, last_name=?
+        DO UPDATE SET first_name=?, last_name=?
       """
       ).use { ps ->
         ps.run {
-          setString(1, user.family_name)
+          setString(1, user.first_name)
           setString(2, user.last_name)
           setString(3, user.mail_address)
-          setString(4, user.family_name)
+          setString(4, user.first_name)
           setString(5, user.last_name)
           execute()
         }
@@ -74,12 +73,12 @@ class UserService : IUserService {
       con.prepareStatement(
         """
         UPDATE users
-        SET family_name = ?, last_name = ?, mail_address = ?
+        SET first_name = ?, last_name = ?, mail_address = ?
         WHERE user_id = ?
       """
       ).use { ps ->
         ps.run {
-          setString(1, user.family_name)
+          setString(1, user.first_name)
           setString(2, user.last_name)
           setString(3, user.mail_address)
           setInt(4, user.user_id)
@@ -111,4 +110,24 @@ class UserService : IUserService {
     rows.getString(3),
     rows.getString(4)
   )
+}
+
+
+class UserServiceStub : IUserService {
+  override fun find(): List<User> {
+    return listOf(
+      User(1, "test", "test", "test@sample.com")
+    )
+  }
+
+  override fun find(id: Int): User {
+    return when (id) {
+      1 -> User(1, "test", "test", "test@sample.com")
+      else -> User()
+    }
+  }
+
+  override fun insert(user: User) {}
+  override fun update(user: User) {}
+  override fun delete(id: Int) {}
 }

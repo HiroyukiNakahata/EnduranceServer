@@ -13,14 +13,16 @@ import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import org.slf4j.event.Level
+import org.slf4j.LoggerFactory
 import java.sql.SQLException
-
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
+  val logger = LoggerFactory.getLogger("SQLException")
+
   install(CallLogging) {
     level = Level.INFO
     filter { call -> call.request.path().startsWith("/") }
@@ -34,7 +36,8 @@ fun Application.module(testing: Boolean = false) {
 
   install(StatusPages) {
     exception<SQLException> { cause ->
-      println(cause.message)
+      logger.error(cause.message)
+      logger.error(cause.sqlState)
       call.respond(HttpStatusCode.InternalServerError)
     }
   }

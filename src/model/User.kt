@@ -2,7 +2,7 @@ package com.endurance.model
 
 data class User(
   val user_id: Int,
-  val family_name: String,
+  val first_name: String,
   val last_name: String,
   val mail_address: String
 ) {

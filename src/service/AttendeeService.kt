@@ -3,7 +3,7 @@ package com.endurance.service
 import com.endurance.model.IAttendeeService
 import com.endurance.model.Attendee
 import java.sql.ResultSet
-
+import java.sql.SQLException
 
 class AttendeeService : IAttendeeService {
   override fun find(): List<Attendee> {
@@ -71,6 +71,34 @@ class AttendeeService : IAttendeeService {
     }
   }
 
+  override fun insertMulti(attendees: List<Attendee>) {
+    HikariService.getConnection().use { con ->
+      try {
+        con.autoCommit = false
+        con.prepareStatement(
+          """
+            INSERT INTO attendee(minutes_id, attendee_name, organization) 
+            VALUES (?, ?, ?)
+          """
+        ).use { ps ->
+          ps.run {
+            attendees.forEach { attendee ->
+              setInt(1, attendee.minutes_id)
+              setString(2, attendee.attendee_name)
+              setString(3, attendee.organization)
+              addBatch()
+            }
+            executeBatch()
+            con.commit()
+          }
+        }
+      } catch (e: SQLException) {
+        con.rollback()
+        throw e
+      }
+    }
+  }
+
   override fun update(attendee: Attendee) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
@@ -113,4 +141,29 @@ class AttendeeService : IAttendeeService {
     rows.getString(3),
     rows.getString(4)
   )
+}
+
+
+class AttendeeServiceStub : IAttendeeService {
+  override fun find(): List<Attendee> {
+    return listOf(
+      Attendee(
+        1, 1, "test", "sample.inc"
+      )
+    )
+  }
+
+  override fun find(id: Int): Attendee {
+    return when (id) {
+      1 -> Attendee(
+        1, 1, "test", "sample.inc"
+      )
+      else -> Attendee()
+    }
+  }
+
+  override fun insert(attendee: Attendee) {}
+  override fun insertMulti(attendees: List<Attendee>) {}
+  override fun update(attendee: Attendee) {}
+  override fun delete(id: Int) {}
 }

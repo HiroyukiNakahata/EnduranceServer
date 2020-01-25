@@ -36,7 +36,7 @@ fun isEmptyTodo(todo: Todo): Boolean = when {
 }
 
 fun isEmptyUser(user: User): Boolean = when {
-  user.family_name == "" -> true
+  user.first_name == "" -> true
   user.last_name == "" -> true
   user.mail_address == "" -> true
   else -> false

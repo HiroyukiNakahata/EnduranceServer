@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <attendee
+            attendee_id="1"
+            minutes_id="1"
+            attendee_name="nakahata"
+            organization="gumi"
+    />
+    <attendee
+            attendee_id="2"
+            minutes_id="1"
+            attendee_name="hoge"
+            organization="gumi"
+    />
+    <attendee
+            attendee_id="3"
+            minutes_id="1"
+            attendee_name="hogefuga"
+            organization="fumofumo.inc"
+    />
+    <attendee
+            attendee_id="4"
+            minutes_id="1"
+            attendee_name="yamada"
+            organization="yamada.inc"
+    />
+    <attendee
+            attendee_id="5"
+            minutes_id="1"
+            attendee_name="goro"
+            organization="goro.inc"
+    />
+</dataset>

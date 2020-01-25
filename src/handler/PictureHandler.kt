@@ -15,7 +15,6 @@ import io.ktor.response.respondFile
 import io.ktor.routing.*
 import java.io.File
 
-
 fun Route.pictureHandler(path: String) {
   val pictureService: IPictureService = Injector.getPictureService()
 

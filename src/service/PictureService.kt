@@ -4,7 +4,6 @@ import com.endurance.model.Picture
 import com.endurance.model.IPictureService
 import java.sql.ResultSet
 
-
 class PictureService : IPictureService {
   override fun find(): List<Picture> {
     HikariService.getConnection().use { con ->
@@ -105,4 +104,25 @@ class PictureService : IPictureService {
     rows.getString(3),
     rows.getString(4)
   )
+}
+
+
+class PictureServiceStub : IPictureService {
+  override fun find(): List<Picture> {
+    return listOf(
+      Picture(
+        1, 1, "image.jpg", "2020-01-23 12:14:47"
+      )
+    )
+  }
+
+  override fun find(id: Int): Picture {
+    return Picture(
+      1, 1, "image.jpg", "2020-01-23 12:14:47"
+    )
+  }
+
+  override fun insert(picture: Picture) {}
+  override fun update(picture: Picture) {}
+  override fun delete(id: Int) {}
 }

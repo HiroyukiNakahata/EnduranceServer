@@ -42,6 +42,17 @@ fun Route.attendeeHandler(path: String) {
       }
     }
 
+    post("/multi") {
+      val attendees = call.receiveOrNull() ?: arrayOf<Attendee>()
+      when (attendees.count()) {
+        0 -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
+          attendeeService.insertMulti(attendees.toList())
+          call.respond(attendees)
+        }
+      }
+    }
+
     put {
       val attendee = call.receiveOrNull() ?: Attendee()
       when {

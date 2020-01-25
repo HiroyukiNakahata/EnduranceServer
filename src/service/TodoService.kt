@@ -4,7 +4,6 @@ import com.endurance.model.Todo
 import com.endurance.model.ITodoService
 import java.sql.ResultSet
 
-
 class TodoService : ITodoService {
   override fun find(): List<Todo> {
     HikariService.getConnection().use { con ->
@@ -153,4 +152,27 @@ class TodoService : ITodoService {
     rows.getString(8),
     rows.getBoolean(9)
   )
+}
+
+
+class TodoServiceStub : ITodoService {
+  override fun find(): List<Todo> {
+    return listOf(
+      Todo(
+        1, 1, 1, 1, "test", "test",
+        "2020-01-23 12:14:47", "2020-01-23 12:14:47", false
+      )
+    )
+  }
+
+  override fun find(id: Int): Todo {
+    return Todo(
+      1, 1, 1, 1, "test", "test",
+      "2020-01-23 12:14:47", "2020-01-23 12:14:47", false
+    )
+  }
+
+  override fun insert(todo: Todo) {}
+  override fun update(todo: Todo) {}
+  override fun delete(id: Int) {}
 }

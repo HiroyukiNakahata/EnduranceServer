@@ -10,7 +10,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 
-
 fun Route.projectHandler(path: String) {
   val projectService: IProjectService = Injector.getProjectService()
 

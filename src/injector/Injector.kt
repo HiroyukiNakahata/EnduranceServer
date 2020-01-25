@@ -1,41 +1,49 @@
 package com.endurance.injector
 
 import com.endurance.model.*
-import com.endurance.service.ProjectService
-import com.endurance.service.UserService
-import com.endurance.service.MinutesService
-import com.endurance.service.MinutesSummaryService
-import com.endurance.service.PictureService
-import com.endurance.service.AttendeeService
-import com.endurance.service.TodoService
+import com.endurance.service.*
 
 
 object Injector {
-  fun getUserService(): IUserService {
-    return UserService()
+  var testing: Boolean = false
+
+  fun getUserService(): IUserService = when {
+    testing -> UserServiceStub()
+    else -> UserService()
   }
 
-  fun getProjectService(): IProjectService {
-    return ProjectService()
+  fun getProjectService(): IProjectService = when {
+    testing -> ProjectServiceStub()
+    else -> ProjectService()
   }
 
-  fun getMinutesService(): IMinutesService {
-    return MinutesService()
+  fun getMinutesService(): IMinutesService = when {
+    testing -> MinutesServiceStub()
+    else -> MinutesService()
   }
 
-  fun getMinutesSummaryService(): IMinutesSummaryService {
-    return MinutesSummaryService()
+  fun getMinutesSummaryService(): IMinutesSummaryService = when {
+    testing -> MinutesSummaryServiceStub()
+    else -> MinutesSummaryService()
   }
 
-  fun getPictureService(): IPictureService {
-    return PictureService()
+  fun getMinutesAllService(): IMinutesAllService = when {
+    testing -> MinutesAllServiceStub()
+    else -> MinutesAllService()
   }
 
-  fun getAttendeeService(): IAttendeeService {
-    return AttendeeService()
+  fun getPictureService(): IPictureService = when {
+    testing -> PictureServiceStub()
+    else -> PictureService()
   }
 
-  fun getTodoService(): ITodoService {
-    return TodoService()
+  fun getAttendeeService(): IAttendeeService = when {
+    testing -> AttendeeServiceStub()
+    else -> AttendeeService()
+  }
+
+  fun getTodoService(): ITodoService = when {
+    testing -> TodoServiceStub()
+    else -> TodoService()
   }
 }

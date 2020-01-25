@@ -9,7 +9,6 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-
 fun Route.todoHandler(path: String) {
   val todoService = Injector.getTodoService()
 

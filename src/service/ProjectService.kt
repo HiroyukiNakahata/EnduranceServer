@@ -4,7 +4,6 @@ import com.endurance.model.IProjectService
 import com.endurance.model.Project
 import java.sql.ResultSet
 
-
 class ProjectService : IProjectService {
   override fun find(): List<Project> {
     HikariService.getConnection().use { con ->
@@ -104,4 +103,24 @@ class ProjectService : IProjectService {
     rows.getString(2),
     rows.getString(3)
   )
+}
+
+
+class ProjectServiceStub : IProjectService {
+  override fun find(): List<Project> {
+    return listOf(
+      Project(1, "test", "sample")
+    )
+  }
+
+  override fun find(id: Int): Project {
+    return when (id) {
+      1 -> Project(1, "test", "sample")
+      else -> Project()
+    }
+  }
+
+  override fun insert(project: Project) {}
+  override fun update(project: Project) {}
+  override fun delete(id: Int) {}
 }

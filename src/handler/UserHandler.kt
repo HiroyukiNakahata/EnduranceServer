@@ -10,7 +10,6 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-
 fun Route.userHandler(path: String) {
   val userService: IUserService = Injector.getUserService()
 

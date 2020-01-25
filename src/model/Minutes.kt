@@ -24,6 +24,24 @@ data class MinutesSummary(
   val time_stamp: String
 )
 
+data class MinutesAll(
+  val minutes_id: Int,
+  val user_name: String,
+  val project_name: String,
+  val client: String,
+  val place: String,
+  val theme: String,
+  val summary: String,
+  val body_text: String,
+  val picture_path: List<String>,
+  val attendee_name: List<String>,
+  val attendee_organization: List<String>,
+  val time_stamp: String
+) {
+  constructor(): this(0, "", "", "", "", "", "",
+    "", listOf<String>(), listOf<String>(), listOf<String>(), "")
+}
+
 interface IMinutesService {
   fun find(): List<Minutes>
   fun find(id: Int): Minutes
@@ -39,4 +57,9 @@ interface IMinutesSummaryService {
   fun findByUser(userId: Int, limit: Int, offset: Int): List<MinutesSummary>
   fun findByProject(projectId: Int): List<MinutesSummary>
   fun findByProject(projectId: Int, limit: Int, offset: Int): List<MinutesSummary>
+}
+
+interface IMinutesAllService {
+  fun find(): List<MinutesAll>
+  fun find(id: Int): MinutesAll
 }

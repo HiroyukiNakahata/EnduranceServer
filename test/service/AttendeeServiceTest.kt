@@ -12,6 +12,7 @@ import org.junit.Assert.assertThat
 import org.junit.Before
 import org.junit.Test
 import java.io.File
+import java.sql.SQLException
 
 class AttendeeServiceTest {
 
@@ -26,6 +27,8 @@ class AttendeeServiceTest {
   private val afterData1 = "./test/data/attendee_test/AttendeeTestDataAfter_1.xml"
   private val afterData2 = "./test/data/attendee_test/AttendeeTestDataAfter_2.xml"
   private val afterData3 = "./test/data/attendee_test/AttendeeTestDataAfter_3.xml"
+  private val afterData4 = "./test/data/attendee_test/AttendeeTestDataAfter_4.xml"
+  private val afterData5 = "./test/data/attendee_test/AttendeeTestDataAfter_5.xml"
 
   private val attendeeService = Injector.getAttendeeService()
 
@@ -78,6 +81,92 @@ class AttendeeServiceTest {
     attendeeService.insert(attendee)
 
     val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData1))
+    var expectedTable = expectedDataset.getTable("attendee")
+    expectedTable = DefaultColumnFilter.excludedColumnsTable(
+      expectedTable, arrayOf("attendee_id")
+    )
+
+    val databaseDataset = databaseTester.connection.createDataSet()
+    var actualTable = databaseDataset.getTable("attendee")
+    actualTable = DefaultColumnFilter.excludedColumnsTable(
+      expectedTable, arrayOf("attendee_id")
+    )
+
+    Assertion.assertEquals(expectedTable, actualTable)
+  }
+
+  // 複数インサート
+  @Test
+  fun insertMulti() {
+    val attendees = listOf(
+      Attendee(
+        attendee_id = 3,
+        minutes_id = 1,
+        attendee_name = "hogefuga",
+        organization = "fumofumo.inc"
+      ),
+      Attendee(
+        attendee_id = 4,
+        minutes_id = 1,
+        attendee_name = "yamada",
+        organization = "yamada.inc"
+      ),
+      Attendee(
+        attendee_id = 5,
+        minutes_id = 1,
+        attendee_name = "goro",
+        organization = "goro.inc"
+      )
+    )
+
+    attendeeService.insertMulti(attendees)
+
+    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData4))
+    var expectedTable = expectedDataset.getTable("attendee")
+    expectedTable = DefaultColumnFilter.excludedColumnsTable(
+      expectedTable, arrayOf("attendee_id")
+    )
+
+    val databaseDataset = databaseTester.connection.createDataSet()
+    var actualTable = databaseDataset.getTable("attendee")
+    actualTable = DefaultColumnFilter.excludedColumnsTable(
+      expectedTable, arrayOf("attendee_id")
+    )
+
+    Assertion.assertEquals(expectedTable, actualTable)
+  }
+
+  // 複数インサート：異常系
+  @Test
+  fun insertMulti_2() {
+    val attendees = listOf(
+      Attendee(
+        attendee_id = 3,
+        minutes_id = 1,
+        attendee_name = "hogefuga",
+        organization = "fumofumo.inc"
+      ),
+      Attendee(
+        attendee_id = 4,
+        minutes_id = 1,
+        attendee_name = "yamada",
+        organization = "yamada.inc"
+      ),
+      Attendee(
+        attendee_id = 5,
+        minutes_id = 3,
+        attendee_name = "goro",
+        organization = "goro.inc"
+      )
+    )
+
+    try {
+      attendeeService.insertMulti(attendees)
+    } catch (e: SQLException) {
+      println(e.message)
+    }
+
+    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData5))
     var expectedTable = expectedDataset.getTable("attendee")
     expectedTable = DefaultColumnFilter.excludedColumnsTable(
       expectedTable, arrayOf("attendee_id")

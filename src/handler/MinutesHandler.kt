@@ -5,6 +5,7 @@ import com.endurance.model.IMinutesSummaryService
 import com.endurance.model.Minutes
 import com.endurance.injector.Injector
 import com.endurance.function.isEmptyMinutes
+import com.endurance.model.IMinutesAllService
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
@@ -14,6 +15,7 @@ import io.ktor.routing.*
 fun Route.minutesHandler(path: String) {
   val minutesService: IMinutesService = Injector.getMinutesService()
   val minutesSummaryService: IMinutesSummaryService = Injector.getMinutesSummaryService()
+  val minutesAllService: IMinutesAllService = Injector.getMinutesAllService()
 
   route(path) {
     get {
@@ -29,6 +31,24 @@ fun Route.minutesHandler(path: String) {
           when (minutes.minutes_id) {
             0 -> call.respond(HttpStatusCode.NotFound)
             else -> call.respond(minutes)
+          }
+        }
+      }
+    }
+
+    get("/all") {
+      val minutesAll = minutesAllService.find()
+      call.respond(minutesAll)
+    }
+
+    get("/all/{id}") {
+      when (val id = call.parameters["id"]?.toIntOrNull()) {
+        null -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
+          val minutesAll = minutesAllService.find(id)
+          when (minutesAll.minutes_id) {
+            0 -> call.respond(HttpStatusCode.NotFound)
+            else -> call.respond(minutesAll)
           }
         }
       }

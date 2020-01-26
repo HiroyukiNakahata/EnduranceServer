@@ -1,36 +1,71 @@
 package service
 
-import com.endurance.injector.Injector
 import com.endurance.model.Attendee
+import com.endurance.service.AttendeeService
+import com.endurance.service.HikariService
 import org.dbunit.Assertion
 import org.dbunit.JdbcDatabaseTester
+import org.dbunit.database.QueryDataSet
 import org.dbunit.dataset.IDataSet
 import org.dbunit.dataset.filter.DefaultColumnFilter
+import org.dbunit.dataset.xml.FlatXmlDataSet
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
-import org.hamcrest.core.Is.`is`
-import org.junit.Assert.assertThat
+import org.dbunit.operation.DatabaseOperation
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 import java.sql.SQLException
+import kotlin.test.assertEquals
 
 class AttendeeServiceTest {
 
-  private val databaseTester = JdbcDatabaseTester(
-    "org.postgresql.Driver",
-    "jdbc:postgresql://localhost/endurance",
-    "postgres",
-    "1203"
-  )
+  private val beforeData = "./testresources/data/attendee_test/AttendeeTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/attendee_test/AttendeeTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/attendee_test/AttendeeTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/attendee_test/AttendeeTestDataAfter_3.xml"
+  private val afterData4 = "./testresources/data/attendee_test/AttendeeTestDataAfter_4.xml"
+  private val afterData5 = "./testresources/data/attendee_test/AttendeeTestDataAfter_5.xml"
 
-  private val beforeData = "./test/data/attendee_test/AttendeeTestDataBefore.xml"
-  private val afterData1 = "./test/data/attendee_test/AttendeeTestDataAfter_1.xml"
-  private val afterData2 = "./test/data/attendee_test/AttendeeTestDataAfter_2.xml"
-  private val afterData3 = "./test/data/attendee_test/AttendeeTestDataAfter_3.xml"
-  private val afterData4 = "./test/data/attendee_test/AttendeeTestDataAfter_4.xml"
-  private val afterData5 = "./test/data/attendee_test/AttendeeTestDataAfter_5.xml"
+  private val attendeeService = AttendeeService()
 
-  private val attendeeService = Injector.getAttendeeService()
+  companion object {
+    private lateinit var original: File
+    private val databaseConfig = HikariService.readConfig()
+    private val databaseTester = databaseConfig.run {
+      JdbcDatabaseTester(driverClass, jdbcUrl, username, password)
+    }
+
+    @BeforeClass
+    @JvmStatic
+    fun beforeTest() {
+      val originDataSet = QueryDataSet(databaseTester.connection)
+      originDataSet.apply {
+        addTable("users")
+        addTable("project")
+        addTable("minutes")
+        addTable("attendee")
+        addTable("picture")
+        addTable("todo")
+      }
+      original = File.createTempFile("tmp", ".xml", File("./testresources/data/tmp/"))
+      FileOutputStream(original).use {
+        FlatXmlDataSet.write(originDataSet, it)
+      }
+    }
+
+    @AfterClass
+    @JvmStatic
+    fun afterTest() {
+      FileInputStream(original).use {
+        val originalDataSet = FlatXmlDataSetBuilder().build(it)
+        DatabaseOperation.CLEAN_INSERT.execute(databaseTester.connection, originalDataSet)
+      }
+    }
+  }
 
   @Before
   fun setUp() {
@@ -48,10 +83,11 @@ class AttendeeServiceTest {
       attendee_name = "nakahata",
       organization = "gumi"
     )
-    assertThat(actual[0].attendee_id, `is`(expected.attendee_id))
-    assertThat(actual[0].minutes_id, `is`(expected.minutes_id))
-    assertThat(actual[0].attendee_name, `is`(expected.attendee_name))
-    assertThat(actual[0].organization, `is`(expected.organization))
+
+    assertEquals(expected.attendee_id, actual[0].attendee_id)
+    assertEquals(expected.minutes_id, actual[0].minutes_id)
+    assertEquals(expected.attendee_name, actual[0].attendee_name)
+    assertEquals(expected.organization, actual[0].organization)
   }
 
   @Test
@@ -63,10 +99,11 @@ class AttendeeServiceTest {
       attendee_name = "nakahata",
       organization = "gumi"
     )
-    assertThat(actual.attendee_id, `is`(expected.attendee_id))
-    assertThat(actual.minutes_id, `is`(expected.minutes_id))
-    assertThat(actual.attendee_name, `is`(expected.attendee_name))
-    assertThat(actual.organization, `is`(expected.organization))
+
+    assertEquals(expected.attendee_id, actual.attendee_id)
+    assertEquals(expected.minutes_id, actual.minutes_id)
+    assertEquals(expected.attendee_name, actual.attendee_name)
+    assertEquals(expected.organization, actual.organization)
   }
 
   @Test
@@ -89,7 +126,7 @@ class AttendeeServiceTest {
     val databaseDataset = databaseTester.connection.createDataSet()
     var actualTable = databaseDataset.getTable("attendee")
     actualTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
+      actualTable, arrayOf("attendee_id")
     )
 
     Assertion.assertEquals(expectedTable, actualTable)
@@ -130,7 +167,7 @@ class AttendeeServiceTest {
     val databaseDataset = databaseTester.connection.createDataSet()
     var actualTable = databaseDataset.getTable("attendee")
     actualTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
+      actualTable, arrayOf("attendee_id")
     )
 
     Assertion.assertEquals(expectedTable, actualTable)
@@ -175,7 +212,7 @@ class AttendeeServiceTest {
     val databaseDataset = databaseTester.connection.createDataSet()
     var actualTable = databaseDataset.getTable("attendee")
     actualTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
+      actualTable, arrayOf("attendee_id")
     )
 
     Assertion.assertEquals(expectedTable, actualTable)

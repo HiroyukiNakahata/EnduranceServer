@@ -1,34 +1,68 @@
 package service
 
-import com.endurance.injector.Injector
 import com.endurance.model.User
+import com.endurance.service.HikariService
+import com.endurance.service.UserService
 import org.dbunit.Assertion
 import org.dbunit.JdbcDatabaseTester
+import org.dbunit.database.QueryDataSet
 import org.dbunit.dataset.IDataSet
 import org.dbunit.dataset.filter.DefaultColumnFilter
+import org.dbunit.dataset.xml.FlatXmlDataSet
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
-import org.hamcrest.core.Is.`is`
-import org.junit.Assert.assertThat
+import org.dbunit.operation.DatabaseOperation
+import org.junit.AfterClass
 import org.junit.Before
+import org.junit.BeforeClass
 import org.junit.Test
 import java.io.File
-
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import kotlin.test.assertEquals
 
 class UserServiceTest {
 
-  private val databaseTester = JdbcDatabaseTester(
-    "org.postgresql.Driver",
-    "jdbc:postgresql://localhost/endurance",
-    "postgres",
-    "1203"
-  )
+  private val beforeData = "./testresources/data/user_test/UserTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/user_test/UserTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/user_test/UserTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/user_test/UserTestDataAfter_3.xml"
 
-  private val beforeData = "./test/data/user_test/UserTestDataBefore.xml"
-  private val afterData1 = "./test/data/user_test/UserTestDataAfter_1.xml"
-  private val afterData2 = "./test/data/user_test/UserTestDataAfter_2.xml"
-  private val afterData3 = "./test/data/user_test/UserTestDataAfter_3.xml"
+  private val userService = UserService()
 
-  private val userService = Injector.getUserService()
+  companion object {
+    private lateinit var original: File
+    private val databaseConfig = HikariService.readConfig()
+    private val databaseTester = databaseConfig.run {
+      JdbcDatabaseTester(driverClass, jdbcUrl, username, password)
+    }
+
+    @BeforeClass
+    @JvmStatic
+    fun beforeTest() {
+      val originDataSet = QueryDataSet(databaseTester.connection)
+      originDataSet.apply {
+        addTable("users")
+        addTable("project")
+        addTable("minutes")
+        addTable("attendee")
+        addTable("picture")
+        addTable("todo")
+      }
+      original = File.createTempFile("tmp", ".xml", File("./testresources/data/tmp/"))
+      FileOutputStream(original).use {
+        FlatXmlDataSet.write(originDataSet, it)
+      }
+    }
+
+    @AfterClass
+    @JvmStatic
+    fun afterTest() {
+      FileInputStream(original).use {
+        val originalDataSet = FlatXmlDataSetBuilder().build(it)
+        DatabaseOperation.CLEAN_INSERT.execute(databaseTester.connection, originalDataSet)
+      }
+    }
+  }
 
   @Before
   fun setUp() {
@@ -46,10 +80,11 @@ class UserServiceTest {
       last_name = "nakahata",
       mail_address = "nakahata@gumi.co.jp"
     )
-    assertThat(actual[0].user_id, `is`(expected.user_id))
-    assertThat(actual[0].first_name, `is`(expected.first_name))
-    assertThat(actual[0].last_name, `is`(expected.last_name))
-    assertThat(actual[0].mail_address, `is`(expected.mail_address))
+
+    assertEquals(expected.user_id, actual[0].user_id)
+    assertEquals(expected.first_name, actual[0].first_name)
+    assertEquals(expected.last_name, actual[0].last_name)
+    assertEquals(expected.mail_address, actual[0].mail_address)
   }
 
   @Test
@@ -61,10 +96,11 @@ class UserServiceTest {
       last_name = "nakahata",
       mail_address = "nakahata@gumi.co.jp"
     )
-    assertThat(actual.user_id, `is`(expected.user_id))
-    assertThat(actual.first_name, `is`(expected.first_name))
-    assertThat(actual.last_name, `is`(expected.last_name))
-    assertThat(actual.mail_address, `is`(expected.mail_address))
+
+    assertEquals(expected.user_id, actual.user_id)
+    assertEquals(expected.first_name, actual.first_name)
+    assertEquals(expected.last_name, actual.last_name)
+    assertEquals(expected.mail_address, actual.mail_address)
   }
 
   @Test
@@ -87,7 +123,7 @@ class UserServiceTest {
     val databaseDataset = databaseTester.connection.createDataSet()
     var actualTable = databaseDataset.getTable("users")
     actualTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("user_id")
+      actualTable, arrayOf("user_id")
     )
 
     Assertion.assertEquals(expectedTable, actualTable)

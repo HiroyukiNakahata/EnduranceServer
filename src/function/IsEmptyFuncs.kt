@@ -17,8 +17,8 @@ fun isEmptyMinutes(minutes: Minutes): Boolean = when {
 }
 
 fun isEmptyPicture(picture: Picture): Boolean = when {
-  picture.minutes_id == 0 -> false
-  else -> true
+  picture.minutes_id == 0 -> true
+  else -> false
 }
 
 fun isEmptyProject(project: Project): Boolean = when {

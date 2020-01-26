@@ -1,21 +1,20 @@
 package com.endurance.handler
 
+import com.endurance.function.isEmptyMinutes
+import com.endurance.model.IMinutesAllService
 import com.endurance.model.IMinutesService
 import com.endurance.model.IMinutesSummaryService
 import com.endurance.model.Minutes
-import com.endurance.injector.Injector
-import com.endurance.function.isEmptyMinutes
-import com.endurance.model.IMinutesAllService
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.minutesHandler(path: String) {
-  val minutesService: IMinutesService = Injector.getMinutesService()
-  val minutesSummaryService: IMinutesSummaryService = Injector.getMinutesSummaryService()
-  val minutesAllService: IMinutesAllService = Injector.getMinutesAllService()
+fun Route.minutesHandler(path: String,
+                         minutesService: IMinutesService,
+                         minutesSummaryService: IMinutesSummaryService,
+                         minutesAllService: IMinutesAllService) {
 
   route(path) {
     get {

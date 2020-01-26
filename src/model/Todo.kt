@@ -18,6 +18,7 @@ interface ITodoService {
   fun find(): List<Todo>
   fun find(id: Int): Todo
   fun insert(todo: Todo)
+  fun insertMulti(todoList: List<Todo>)
   fun update(todo: Todo)
   fun delete(id: Int)
 }

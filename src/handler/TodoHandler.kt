@@ -1,7 +1,7 @@
 package com.endurance.handler
 
 import com.endurance.function.isEmptyTodo
-import com.endurance.injector.Injector
+import com.endurance.model.ITodoService
 import com.endurance.model.Todo
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
@@ -9,8 +9,8 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.todoHandler(path: String) {
-  val todoService = Injector.getTodoService()
+fun Route.todoHandler(path: String,
+                      todoService: ITodoService) {
 
   route(path) {
     get {

@@ -1,7 +1,6 @@
 package com.endurance.handler
 
 import com.endurance.function.isEmptyUser
-import com.endurance.injector.Injector
 import com.endurance.model.IUserService
 import com.endurance.model.User
 import io.ktor.application.call
@@ -10,8 +9,8 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.userHandler(path: String) {
-  val userService: IUserService = Injector.getUserService()
+fun Route.userHandler(path: String,
+                      userService: IUserService) {
 
   route(path) {
     get {

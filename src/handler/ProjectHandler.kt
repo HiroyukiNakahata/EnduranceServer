@@ -1,17 +1,16 @@
 package com.endurance.handler
 
 import com.endurance.function.isEmptyProject
-import com.endurance.injector.Injector
 import com.endurance.model.IProjectService
 import com.endurance.model.Project
-import io.ktor.routing.*
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
+import io.ktor.routing.*
 
-fun Route.projectHandler(path: String) {
-  val projectService: IProjectService = Injector.getProjectService()
+fun Route.projectHandler(path: String,
+                         projectService: IProjectService) {
 
   route(path) {
     get {

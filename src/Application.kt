@@ -1,6 +1,7 @@
 package com.endurance
 
 import com.endurance.handler.*
+import com.endurance.injector.Injector
 import io.ktor.application.Application
 import io.ktor.application.call
 import io.ktor.application.install
@@ -12,6 +13,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
+import io.ktor.util.KtorExperimentalAPI
 import org.slf4j.event.Level
 import org.slf4j.LoggerFactory
 import java.sql.SQLException
@@ -21,7 +23,7 @@ fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 @Suppress("unused") // Referenced in application.conf
 @kotlin.jvm.JvmOverloads
 fun Application.module(testing: Boolean = false) {
-  val logger = LoggerFactory.getLogger("SQLException")
+  Injector.testing = testing
 
   install(CallLogging) {
     level = Level.INFO
@@ -35,20 +37,41 @@ fun Application.module(testing: Boolean = false) {
   }
 
   install(StatusPages) {
+    val loggerSQL = LoggerFactory.getLogger("SQLException")
     exception<SQLException> { cause ->
-      logger.error(cause.message)
-      logger.error(cause.sqlState)
+      loggerSQL.error(cause.message)
+      loggerSQL.error(cause.sqlState)
       call.respond(HttpStatusCode.InternalServerError)
     }
   }
 
   routing {
     rootHandler("/")
-    userHandler("/api/user")
-    projectHandler("/api/project")
-    minutesHandler("/api/minutes")
-    pictureHandler("/api/picture")
-    attendeeHandler("/api/attendee")
-    todoHandler("/api/todo")
+    userHandler(
+      "/api/user",
+      Injector.getUserService()
+    )
+    projectHandler(
+      "/api/project",
+      Injector.getProjectService()
+    )
+    minutesHandler(
+      "/api/minutes",
+      Injector.getMinutesService(),
+      Injector.getMinutesSummaryService(),
+      Injector.getMinutesAllService()
+    )
+    pictureHandler(
+      "/api/picture",
+      Injector.getPictureService()
+    )
+    attendeeHandler(
+      "/api/attendee",
+      Injector.getAttendeeService()
+    )
+    todoHandler(
+      "/api/todo",
+      Injector.getTodoService()
+    )
   }
 }

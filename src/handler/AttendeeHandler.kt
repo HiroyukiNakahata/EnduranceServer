@@ -1,16 +1,16 @@
 package com.endurance.handler
 
 import com.endurance.function.isEmptyAttendee
-import com.endurance.injector.Injector
 import com.endurance.model.Attendee
+import com.endurance.model.IAttendeeService
 import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.attendeeHandler(path: String) {
-  val attendeeService = Injector.getAttendeeService()
+fun Route.attendeeHandler(path: String,
+                          attendeeService: IAttendeeService) {
 
   route(path) {
     get {
@@ -43,12 +43,17 @@ fun Route.attendeeHandler(path: String) {
     }
 
     post("/multi") {
-      val attendees = call.receiveOrNull() ?: arrayOf<Attendee>()
+      val attendees = (call.receiveOrNull() ?: arrayOf<Attendee>()).toList()
       when (attendees.count()) {
         0 -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          attendeeService.insertMulti(attendees.toList())
-          call.respond(attendees)
+          when (attendees.any { d -> isEmptyAttendee(d) }) {
+            true -> call.respond(HttpStatusCode.BadRequest)
+            else -> {
+              attendeeService.insertMulti(attendees)
+              call.respond(attendees)
+            }
+          }
         }
       }
     }

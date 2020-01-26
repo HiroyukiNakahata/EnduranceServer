@@ -1,7 +1,6 @@
 package com.endurance.handler
 
 import com.endurance.function.getNowTimeString
-import com.endurance.injector.Injector
 import com.endurance.model.IPictureService
 import com.endurance.model.Picture
 import io.ktor.application.call
@@ -15,8 +14,8 @@ import io.ktor.response.respondFile
 import io.ktor.routing.*
 import java.io.File
 
-fun Route.pictureHandler(path: String) {
-  val pictureService: IPictureService = Injector.getPictureService()
+fun Route.pictureHandler(path: String,
+                         pictureService: IPictureService) {
 
   route(path) {
     get {

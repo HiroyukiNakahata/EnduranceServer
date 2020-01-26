@@ -1,22 +1,21 @@
 package com.endurance.routing
 
-import com.endurance.injector.Injector
 import com.endurance.model.Minutes
 import com.endurance.model.MinutesAll
 import com.endurance.model.MinutesSummary
 import com.endurance.module
 import com.google.gson.Gson
-import io.ktor.http.*
-import kotlin.test.*
-import io.ktor.server.testing.*
-
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.testing.handleRequest
+import io.ktor.server.testing.setBody
+import io.ktor.server.testing.withTestApplication
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MinutesRoutingTest {
-  @BeforeTest
-  fun before() {
-    // サービスはスタブを使用
-    Injector.testing = true
-  }
 
   // GETで全件取得
   @Test

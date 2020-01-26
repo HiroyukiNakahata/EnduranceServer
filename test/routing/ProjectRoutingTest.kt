@@ -1,6 +1,5 @@
 package com.endurance.routing
 
-import com.endurance.injector.Injector
 import com.endurance.model.Project
 import com.endurance.module
 import com.google.gson.Gson
@@ -11,17 +10,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-
 class ProjectRoutingTest {
-  @BeforeTest
-  fun before() {
-    // サービスはスタブを使用
-    Injector.testing = true
-  }
 
   // GETで全件取得
   @Test

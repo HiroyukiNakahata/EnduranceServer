@@ -9,8 +9,10 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.userHandler(path: String,
-                      userService: IUserService) {
+fun Route.userHandler(
+  path: String,
+  userService: IUserService
+) {
 
   route(path) {
     get {

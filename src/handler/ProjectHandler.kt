@@ -9,8 +9,10 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.projectHandler(path: String,
-                         projectService: IProjectService) {
+fun Route.projectHandler(
+  path: String,
+  projectService: IProjectService
+) {
 
   route(path) {
     get {

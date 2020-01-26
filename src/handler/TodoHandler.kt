@@ -9,8 +9,10 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.todoHandler(path: String,
-                      todoService: ITodoService) {
+fun Route.todoHandler(
+  path: String,
+  todoService: ITodoService
+) {
 
   route(path) {
     get {

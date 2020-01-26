@@ -9,8 +9,10 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.attendeeHandler(path: String,
-                          attendeeService: IAttendeeService) {
+fun Route.attendeeHandler(
+  path: String,
+  attendeeService: IAttendeeService
+) {
 
   route(path) {
     get {
@@ -47,7 +49,7 @@ fun Route.attendeeHandler(path: String,
       when (attendees.count()) {
         0 -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          when (attendees.any { d -> isEmptyAttendee(d) }) {
+          when (attendees.any { isEmptyAttendee(it) }) {
             true -> call.respond(HttpStatusCode.BadRequest)
             else -> {
               attendeeService.insertMulti(attendees)

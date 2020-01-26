@@ -14,8 +14,10 @@ import io.ktor.response.respondFile
 import io.ktor.routing.*
 import java.io.File
 
-fun Route.pictureHandler(path: String,
-                         pictureService: IPictureService) {
+fun Route.pictureHandler(
+  path: String,
+  pictureService: IPictureService
+) {
 
   route(path) {
     get {

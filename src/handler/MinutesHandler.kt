@@ -11,10 +11,12 @@ import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
 
-fun Route.minutesHandler(path: String,
-                         minutesService: IMinutesService,
-                         minutesSummaryService: IMinutesSummaryService,
-                         minutesAllService: IMinutesAllService) {
+fun Route.minutesHandler(
+  path: String,
+  minutesService: IMinutesService,
+  minutesSummaryService: IMinutesSummaryService,
+  minutesAllService: IMinutesAllService
+) {
 
   route(path) {
     get {

@@ -4,6 +4,7 @@ import com.endurance.model.Todo
 import com.endurance.model.ITodoService
 import java.sql.ResultSet
 import java.sql.SQLException
+import java.sql.Timestamp
 
 class TodoService : ITodoService {
   override fun find(): List<Todo> {
@@ -76,7 +77,7 @@ class TodoService : ITodoService {
             start_time_stamp,
             end_time_stamp,
             status) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), ?)
       """
       ).use { ps ->
         ps.run {
@@ -109,7 +110,7 @@ class TodoService : ITodoService {
             start_time_stamp,
             end_time_stamp,
             status) 
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?, ?, to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), ?)
         """
         ).use { ps ->
           ps.run {
@@ -145,8 +146,8 @@ class TodoService : ITodoService {
             user_id = ?,
             task_title = ?,
             task_body = ?,
-            start_time_stamp = ?,
-            end_time_stamp = ?,
+            start_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
+            end_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
             status = ?
         WHERE todo_id = ?
       """

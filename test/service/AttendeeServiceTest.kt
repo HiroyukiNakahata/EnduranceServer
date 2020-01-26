@@ -3,21 +3,18 @@ package service
 import com.endurance.model.Attendee
 import com.endurance.service.AttendeeService
 import com.endurance.service.HikariService
+import com.endurance.service.restoreOriginalData
+import com.endurance.service.saveOriginalData
 import org.dbunit.Assertion
 import org.dbunit.JdbcDatabaseTester
-import org.dbunit.database.QueryDataSet
 import org.dbunit.dataset.IDataSet
 import org.dbunit.dataset.filter.DefaultColumnFilter
-import org.dbunit.dataset.xml.FlatXmlDataSet
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
-import org.dbunit.operation.DatabaseOperation
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.sql.SQLException
 import kotlin.test.assertEquals
 
@@ -42,28 +39,13 @@ class AttendeeServiceTest {
     @BeforeClass
     @JvmStatic
     fun beforeTest() {
-      val originDataSet = QueryDataSet(databaseTester.connection)
-      originDataSet.apply {
-        addTable("users")
-        addTable("project")
-        addTable("minutes")
-        addTable("attendee")
-        addTable("picture")
-        addTable("todo")
-      }
-      original = File.createTempFile("tmp", ".xml", File("./testresources/data/tmp/"))
-      FileOutputStream(original).use {
-        FlatXmlDataSet.write(originDataSet, it)
-      }
+      original = saveOriginalData(databaseTester)
     }
 
     @AfterClass
     @JvmStatic
     fun afterTest() {
-      FileInputStream(original).use {
-        val originalDataSet = FlatXmlDataSetBuilder().build(it)
-        DatabaseOperation.CLEAN_INSERT.execute(databaseTester.connection, originalDataSet)
-      }
+      restoreOriginalData(original, databaseTester)
     }
   }
 

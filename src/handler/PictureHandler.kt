@@ -7,7 +7,6 @@ import io.ktor.application.call
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.content.PartData
 import io.ktor.http.content.readAllParts
-import io.ktor.http.content.streamProvider
 import io.ktor.request.receiveMultipart
 import io.ktor.response.respond
 import io.ktor.response.respondFile
@@ -16,7 +15,9 @@ import java.io.File
 
 fun Route.pictureHandler(
   path: String,
-  pictureService: IPictureService
+  pictureService: IPictureService,
+  saveFileOperation: (PartData.FileItem, String) -> Unit,
+  deleteFileOperation: (String) -> Unit
 ) {
 
   route(path) {
@@ -50,36 +51,47 @@ fun Route.pictureHandler(
     post {
       val multiPartAll = call.receiveMultipart().readAllParts()
 
-      val id = multiPartAll
+      val minutesId = multiPartAll
         .filterIsInstance<PartData.FormItem>()
-        .filter { part -> part.name == "id" }
-        .elementAtOrNull(0)?.value?.toIntOrNull() ?: 0
+        .filter { part -> part.name == "minutes_id" }
+        .elementAtOrNull(0)?.value?.toIntOrNull()
 
-      multiPartAll
-        .filterIsInstance<PartData.FileItem>()
-        .forEach { part ->
-          val time = getNowTimeString()
-          val fileName = time + "-" + (part.originalFileName ?: "upload.jpg")
-          val file = File("upload/$fileName")
-          part.streamProvider().use { its ->
-            file.outputStream().use {
-              its.copyTo(it)
+      when (minutesId) {
+        null -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
+          multiPartAll
+            .filterIsInstance<PartData.FileItem>()
+            .forEach { part ->
+              val fileName = getNowTimeString() + "-" + (part.originalFileName ?: return@forEach)
+              kotlin.runCatching {
+                pictureService.insert(Picture(0, minutesId, fileName, ""))
+              }.onSuccess {
+                saveFileOperation(part, fileName)
+              }.onFailure {
+                throw it
+              }
             }
-          }
 
-          pictureService.insert(Picture(0, id, fileName, ""))
+          multiPartAll.forEach { part -> part.dispose() }
+          call.respond(HttpStatusCode.OK)
         }
-
-      multiPartAll.forEach { part -> part.dispose() }
-      call.respond(HttpStatusCode.OK)
-    }
-
-    put {
-      // TODO: ファイル更新
+      }
     }
 
     delete("/{id}") {
-      // TODO: ファイル削除
+      when (val id = call.parameters["id"]?.toIntOrNull()) {
+        null -> call.respond(HttpStatusCode.BadRequest)
+        else -> {
+          when (val fileName = pictureService.find(id).picture_path) {
+            "" -> call.respond(HttpStatusCode.NotFound)
+            else -> {
+              pictureService.delete(id)
+              deleteFileOperation(fileName)
+              call.respond(HttpStatusCode.OK)
+            }
+          }
+        }
+      }
     }
   }
 }

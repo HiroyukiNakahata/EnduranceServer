@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <project
+            project_id="1"
+            project_name="おやつ"
+            client="Shinagawa"
+    />
+    <project
+            project_id="2"
+            project_name="ばんごはん"
+            client="Yoyogi"
+    />
+</dataset>

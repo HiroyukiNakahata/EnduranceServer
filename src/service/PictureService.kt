@@ -1,7 +1,7 @@
 package com.endurance.service
 
-import com.endurance.model.Picture
 import com.endurance.model.IPictureService
+import com.endurance.model.Picture
 import java.sql.ResultSet
 
 class PictureService : IPictureService {
@@ -110,16 +110,15 @@ class PictureService : IPictureService {
 class PictureServiceStub : IPictureService {
   override fun find(): List<Picture> {
     return listOf(
-      Picture(
-        1, 1, "image.jpg", "2020-01-23 12:14:47"
-      )
+      Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
     )
   }
 
   override fun find(id: Int): Picture {
-    return Picture(
-      1, 1, "image.jpg", "2020-01-23 12:14:47"
-    )
+    return when (id) {
+      1 -> Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
+      else -> Picture()
+    }
   }
 
   override fun insert(picture: Picture) {}

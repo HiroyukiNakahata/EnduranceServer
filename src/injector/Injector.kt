@@ -1,7 +1,10 @@
 package com.endurance.injector
 
+import com.endurance.function.deleteFileItem
+import com.endurance.function.saveFileItem
 import com.endurance.model.*
 import com.endurance.service.*
+import io.ktor.http.content.PartData
 
 
 object Injector {
@@ -45,5 +48,15 @@ object Injector {
   fun getTodoService(): ITodoService = when {
     testing -> TodoServiceStub()
     else -> TodoService()
+  }
+
+  fun getSaveFileOperation(): (PartData.FileItem, String) -> Unit = when {
+    testing -> { _: PartData.FileItem, _: String -> }
+    else -> ::saveFileItem
+  }
+
+  fun getDeleteFileOperation(): (String) -> Unit = when {
+    testing -> { _: String -> }
+    else -> ::deleteFileItem
   }
 }

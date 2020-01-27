@@ -20,19 +20,18 @@ import kotlin.test.assertEquals
 
 class AttendeeServiceTest {
 
-  private val beforeData = "./testresources/data/attendee_test/AttendeeTestDataBefore.xml"
-  private val afterData1 = "./testresources/data/attendee_test/AttendeeTestDataAfter_1.xml"
-  private val afterData2 = "./testresources/data/attendee_test/AttendeeTestDataAfter_2.xml"
-  private val afterData3 = "./testresources/data/attendee_test/AttendeeTestDataAfter_3.xml"
-  private val afterData4 = "./testresources/data/attendee_test/AttendeeTestDataAfter_4.xml"
-  private val afterData5 = "./testresources/data/attendee_test/AttendeeTestDataAfter_5.xml"
+  private val beforeData = "./testresources/data/attendee/AttendeeTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/attendee/AttendeeTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/attendee/AttendeeTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/attendee/AttendeeTestDataAfter_3.xml"
+  private val afterData4 = "./testresources/data/attendee/AttendeeTestDataAfter_4.xml"
+  private val afterData5 = "./testresources/data/attendee/AttendeeTestDataAfter_5.xml"
 
   private val attendeeService = AttendeeService()
 
   companion object {
     private lateinit var original: File
-    private val databaseConfig = HikariService.readConfig()
-    private val databaseTester = databaseConfig.run {
+    private val databaseTester = HikariService.readConfig().run {
       JdbcDatabaseTester(driverClass, jdbcUrl, username, password)
     }
 
@@ -51,25 +50,34 @@ class AttendeeServiceTest {
 
   @Before
   fun setUp() {
-    val dataset: IDataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
-    databaseTester.dataSet = dataset
-    databaseTester.onSetup()
+    databaseTester.apply {
+      dataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
+      onSetup()
+    }
   }
 
   @Test
   fun find() {
     val actual = attendeeService.find()
-    val expected = Attendee(
-      attendee_id = 1,
-      minutes_id = 1,
-      attendee_name = "nakahata",
-      organization = "gumi"
+    val expected = listOf(
+      Attendee(
+        attendee_id = 1,
+        minutes_id = 1,
+        attendee_name = "nakahata",
+        organization = "gumi"
+      ),
+      Attendee(
+        attendee_id = 2,
+        minutes_id = 1,
+        attendee_name = "hoge",
+        organization = "gumi"
+      )
     )
 
-    assertEquals(expected.attendee_id, actual[0].attendee_id)
-    assertEquals(expected.minutes_id, actual[0].minutes_id)
-    assertEquals(expected.attendee_name, actual[0].attendee_name)
-    assertEquals(expected.organization, actual[0].organization)
+    assertEquals(expected.count(), actual.count())
+    expected.zip(actual).forEach { pair ->
+      assertEquals(pair.first, pair.second)
+    }
   }
 
   @Test
@@ -82,10 +90,7 @@ class AttendeeServiceTest {
       organization = "gumi"
     )
 
-    assertEquals(expected.attendee_id, actual.attendee_id)
-    assertEquals(expected.minutes_id, actual.minutes_id)
-    assertEquals(expected.attendee_name, actual.attendee_name)
-    assertEquals(expected.organization, actual.organization)
+    assertEquals(expected, actual)
   }
 
   @Test
@@ -99,19 +104,19 @@ class AttendeeServiceTest {
 
     attendeeService.insert(attendee)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData1))
-    var expectedTable = expectedDataset.getTable("attendee")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData1))
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("attendee")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("attendee_id")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   // 複数インサート
@@ -140,19 +145,19 @@ class AttendeeServiceTest {
 
     attendeeService.insertMulti(attendees)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData4))
-    var expectedTable = expectedDataset.getTable("attendee")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData4))
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("attendee")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("attendee_id")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   // 複数インサート：異常系
@@ -185,19 +190,19 @@ class AttendeeServiceTest {
       println(e.message)
     }
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData5))
-    var expectedTable = expectedDataset.getTable("attendee")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("attendee_id")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData5))
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("attendee")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("attendee_id")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("attendee")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("attendee_id"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
@@ -211,25 +216,25 @@ class AttendeeServiceTest {
 
     attendeeService.update(attendee)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData2))
-    val expectedTable = expectedDataset.getTable("attendee")
+    val expected = FlatXmlDataSetBuilder().build(File(afterData2))
+      .getTable("attendee")
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    val actualTable = databaseDataset.getTable("attendee")
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("attendee")
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
   fun delete() {
     attendeeService.delete(1)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData3))
-    val expectedTable = expectedDataset.getTable("attendee")
+    val expected = FlatXmlDataSetBuilder().build(File(afterData3))
+      .getTable("attendee")
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    val actualTable = databaseDataset.getTable("attendee")
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("attendee")
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 }

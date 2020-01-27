@@ -62,7 +62,9 @@ fun Application.module(testing: Boolean = false) {
     )
     pictureHandler(
       "/api/picture",
-      Injector.getPictureService()
+      Injector.getPictureService(),
+      Injector.getSaveFileOperation(),
+      Injector.getDeleteFileOperation()
     )
     attendeeHandler(
       "/api/attendee",

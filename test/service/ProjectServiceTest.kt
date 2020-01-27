@@ -1,8 +1,8 @@
 package service
 
-import com.endurance.model.User
+import com.endurance.model.Project
 import com.endurance.service.HikariService
-import com.endurance.service.UserService
+import com.endurance.service.ProjectService
 import com.endurance.service.restoreOriginalData
 import com.endurance.service.saveOriginalData
 import org.dbunit.Assertion
@@ -11,20 +11,20 @@ import org.dbunit.dataset.IDataSet
 import org.dbunit.dataset.filter.DefaultColumnFilter
 import org.dbunit.dataset.xml.FlatXmlDataSetBuilder
 import org.junit.AfterClass
+import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.BeforeClass
 import org.junit.Test
 import java.io.File
-import kotlin.test.assertEquals
 
-class UserServiceTest {
+class ProjectServiceTest {
 
-  private val beforeData = "./testresources/data/user/UserTestDataBefore.xml"
-  private val afterData1 = "./testresources/data/user/UserTestDataAfter_1.xml"
-  private val afterData2 = "./testresources/data/user/UserTestDataAfter_2.xml"
-  private val afterData3 = "./testresources/data/user/UserTestDataAfter_3.xml"
+  private val beforeData = "./testresources/data/project/ProjectTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/project/ProjectTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/project/ProjectTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/project/ProjectTestDataAfter_3.xml"
 
-  private val userService = UserService()
+  private val projectService = ProjectService()
 
   companion object {
     private lateinit var original: File
@@ -55,19 +55,17 @@ class UserServiceTest {
 
   @Test
   fun find() {
-    val actual = userService.find()
+    val actual = projectService.find()
     val expected = listOf(
-      User(
-        user_id = 1,
-        first_name = "hiroyuki",
-        last_name = "nakahata",
-        mail_address = "nakahata@gumi.co.jp"
+      Project(
+        1,
+        "おひるごはん",
+        "Shibuya"
       ),
-      User(
-        user_id = 2,
-        first_name = "fizz",
-        last_name = "buzz",
-        mail_address = "fizzbuzz@gumi.co.jp"
+      Project(
+        2,
+        "ばんごはん",
+        "Yoyogi"
       )
     )
 
@@ -79,12 +77,11 @@ class UserServiceTest {
 
   @Test
   fun testFind() {
-    val actual = userService.find(1)
-    val expected = User(
-      user_id = 1,
-      first_name = "hiroyuki",
-      last_name = "nakahata",
-      mail_address = "nakahata@gumi.co.jp"
+    val actual = projectService.find(1)
+    val expected = Project(
+      1,
+      "おひるごはん",
+      "Shibuya"
     )
 
     assertEquals(expected, actual)
@@ -92,25 +89,24 @@ class UserServiceTest {
 
   @Test
   fun insert() {
-    val user = User(
-      user_id = 2,
-      first_name = "hoge",
-      last_name = "fuga",
-      mail_address = "hogehoge@gumi.co.jp"
+    val project = Project(
+      3,
+      "おやつ",
+      "Shinagawa"
     )
 
-    userService.insert(user)
+    projectService.insert(project)
 
     val expected = FlatXmlDataSetBuilder().build(File(afterData1))
-      .getTable("users")
+      .getTable("project")
       .let {
-        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("user_id"))
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
       }
 
     val actual = databaseTester.connection.createDataSet()
-      .getTable("users")
+      .getTable("project")
       .let {
-        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("user_id"))
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
       }
 
     Assertion.assertEquals(expected, actual)
@@ -118,33 +114,44 @@ class UserServiceTest {
 
   @Test
   fun update() {
-    val user = User(
-      user_id = 1,
-      first_name = "test",
-      last_name = "sample",
-      mail_address = "sample@gumi.co.jp"
+    val project = Project(
+      1,
+      "おやつ",
+      "Shinagawa"
     )
 
-    userService.update(user)
+    projectService.update(project)
 
     val expected = FlatXmlDataSetBuilder().build(File(afterData2))
-      .getTable("users")
+      .getTable("project")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
+      }
 
     val actual = databaseTester.connection.createDataSet()
-      .getTable("users")
+      .getTable("project")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
+      }
 
     Assertion.assertEquals(expected, actual)
   }
 
   @Test
   fun delete() {
-    userService.delete(1)
+    projectService.delete(1)
 
     val expected = FlatXmlDataSetBuilder().build(File(afterData3))
-      .getTable("users")
+      .getTable("project")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
+      }
 
     val actual = databaseTester.connection.createDataSet()
-      .getTable("users")
+      .getTable("project")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("project_id"))
+      }
 
     Assertion.assertEquals(expected, actual)
   }

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <users
+            user_id="1"
+            first_name="hiroyuki"
+            last_name="nakahata"
+            mail_address="nakahata@gumi.co.jp"
+    />
+    <project
+            project_id="1"
+            project_name="おひるごはん"
+            client="Shibuya"
+    />
+    <minutes
+            minutes_id="1"
+            user_id="1"
+            project_id="1"
+            place="Ebisu"
+            theme="おひるごはん"
+            summary="おひるごはんの内容について"
+            body_text="おひるごはんは何食べる"
+            time_stamp="2020-01-23 12:14:47"
+    />
+    <minutes
+            minutes_id="2"
+            user_id="1"
+            project_id="1"
+            place="Shinagawa"
+            theme="ばんごはん"
+            summary="ばんごはんの内容について"
+            body_text="ばんごはんは何食べる"
+            time_stamp="2020-01-23 12:14:47"
+    />
+    <attendee
+            attendee_id="1"
+            minutes_id="1"
+            attendee_name="nakahata"
+            organization="gumi"
+    />
+    <attendee
+            attendee_id="2"
+            minutes_id="1"
+            attendee_name="yoyogi"
+            organization="shinagawa"
+    />
+    <attendee
+            attendee_id="3"
+            minutes_id="2"
+            attendee_name="shibuya"
+            organization="harajuku"
+    />
+    <picture
+            picture_id="1"
+            minutes_id="1"
+            picture_path="sample.jpg"
+            time_stamp="2020-01-23 12:14:47"
+    />
+    <picture
+            picture_id="2"
+            minutes_id="1"
+            picture_path="image.png"
+            time_stamp="2020-01-23 12:14:47"
+    />
+    <todo
+            todo_id="1"
+            minutes_id="1"
+            project_id="1"
+            user_id="1"
+            task_title="test"
+            task_body="test"
+            start_time_stamp="2020-01-23 12:14:47.0"
+            end_time_stamp="2020-01-23 12:14:47.0"
+            status="false"
+    />
+</dataset>

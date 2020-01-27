@@ -19,16 +19,27 @@ fun saveOriginalData(databaseTester: JdbcDatabaseTester): File {
     addTable("picture")
     addTable("todo")
   }
+
   val tmpFile = File.createTempFile("tmp", ".xml", File("./testresources/data/tmp/"))
   FileOutputStream(tmpFile).use {
-    FlatXmlDataSet.write(originDataSet, it)
+    FlatXmlDataSet
+      .write(
+        originDataSet,
+        it
+      )
   }
+
   return tmpFile
 }
 
 fun restoreOriginalData(originalData: File, databaseTester: JdbcDatabaseTester) {
   FileInputStream(originalData).use {
     val originalDataSet = FlatXmlDataSetBuilder().build(it)
-    DatabaseOperation.CLEAN_INSERT.execute(databaseTester.connection, originalDataSet)
+    DatabaseOperation
+      .CLEAN_INSERT
+      .execute(
+        databaseTester.connection,
+        originalDataSet
+      )
   }
 }

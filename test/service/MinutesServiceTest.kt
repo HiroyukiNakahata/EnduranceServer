@@ -19,17 +19,16 @@ import kotlin.test.assertEquals
 
 class MinutesServiceTest {
 
-  private val beforeData = "./testresources/data/minutes_test/MinutesTestDataBefore.xml"
-  private val afterData1 = "./testresources/data/minutes_test/MinutesTestDataAfter_1.xml"
-  private val afterData2 = "./testresources/data/minutes_test/MinutesTestDataAfter_2.xml"
-  private val afterData3 = "./testresources/data/minutes_test/MinutesTestDataAfter_3.xml"
+  private val beforeData = "./testresources/data/minutes/MinutesTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/minutes/MinutesTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/minutes/MinutesTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/minutes/MinutesTestDataAfter_3.xml"
 
   private val minutesService = MinutesService()
 
   companion object {
     private lateinit var original: File
-    private val databaseConfig = HikariService.readConfig()
-    private val databaseTester = databaseConfig.run {
+    private val databaseTester = HikariService.readConfig().run {
       JdbcDatabaseTester(driverClass, jdbcUrl, username, password)
     }
 
@@ -48,32 +47,48 @@ class MinutesServiceTest {
 
   @Before
   fun setUp() {
-    val dataset: IDataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
-    databaseTester.dataSet = dataset
-    databaseTester.onSetup()
+    databaseTester.apply {
+      dataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
+      onSetup()
+    }
   }
 
   @Test
   fun find() {
     val actual = minutesService.find()
-    val expected = Minutes(
-      minutes_id = 1,
-      user_id = 1,
-      project_id = 1,
-      place = "Ebisu",
-      theme = "おひるごはん",
-      summary = "おひるごはん",
-      body_text = "おひるごはん",
-      time_stamp = "2020-01-23 12:14:47"
+    val expected = listOf(
+      Minutes(
+        minutes_id = 1,
+        user_id = 1,
+        project_id = 1,
+        place = "Ebisu",
+        theme = "おひるごはん",
+        summary = "おひるごはん",
+        body_text = "おひるごはん",
+        time_stamp = "2020-01-23 12:14:47"
+      ),
+      Minutes(
+        minutes_id = 2,
+        user_id = 1,
+        project_id = 1,
+        place = "Shinagawa",
+        theme = "ばんごはん",
+        summary = "ばんごはん",
+        body_text = "ばんごはん",
+        time_stamp = "2020-01-23 12:14:47"
+      )
     )
 
-    assertEquals(expected.minutes_id, actual[0].minutes_id)
-    assertEquals(expected.user_id, actual[0].user_id)
-    assertEquals(expected.project_id, actual[0].project_id)
-    assertEquals(expected.place, actual[0].place)
-    assertEquals(expected.theme, actual[0].theme)
-    assertEquals(expected.summary, actual[0].summary)
-    assertEquals(expected.body_text, actual[0].body_text)
+    assertEquals(expected.count(), actual.count())
+    expected.zip(actual).forEach { pair ->
+      assertEquals(pair.first.minutes_id, pair.second.minutes_id)
+      assertEquals(pair.first.user_id, pair.second.user_id)
+      assertEquals(pair.first.project_id, pair.second.project_id)
+      assertEquals(pair.first.place, pair.second.place)
+      assertEquals(pair.first.theme, pair.second.theme)
+      assertEquals(pair.first.summary, pair.second.summary)
+      assertEquals(pair.first.body_text, pair.second.body_text)
+    }
   }
 
   @Test
@@ -114,19 +129,19 @@ class MinutesServiceTest {
 
     minutesService.insert(minutes)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData1))
-    var expectedTable = expectedDataset.getTable("minutes")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("minutes_id", "time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData1))
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("minutes_id", "time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("minutes")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("minutes_id", "time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("minutes_id", "time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
@@ -144,37 +159,37 @@ class MinutesServiceTest {
 
     minutesService.update(minutes)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData2))
-    var expectedTable = expectedDataset.getTable("minutes")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData2))
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("minutes")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
   fun delete() {
     minutesService.delete(1)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData3))
-    var expectedTable = expectedDataset.getTable("minutes")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData3))
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("minutes")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("minutes")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 }

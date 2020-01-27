@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+    <picture
+            picture_id="1"
+            minutes_id="1"
+            picture_path="my-picture.jpg"
+            time_stamp="2020-01-23 12:14:47"
+    />
+    <picture
+            picture_id="2"
+            minutes_id="1"
+            picture_path="image.png"
+            time_stamp="2020-01-23 12:14:47"
+    />
+</dataset>

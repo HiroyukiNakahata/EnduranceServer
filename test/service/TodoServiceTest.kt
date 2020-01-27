@@ -20,19 +20,18 @@ import java.sql.SQLException
 
 class TodoServiceTest {
 
-  private val beforeData = "./testresources/data/todo_test/TodoTestDataBefore.xml"
-  private val afterData1 = "./testresources/data/todo_test/TodoTestDataAfter_1.xml"
-  private val afterData2 = "./testresources/data/todo_test/TodoTestDataAfter_2.xml"
-  private val afterData3 = "./testresources/data/todo_test/TodoTestDataAfter_3.xml"
-  private val afterData4 = "./testresources/data/todo_test/TodoTestDataAfter_4.xml"
-  private val afterData5 = "./testresources/data/todo_test/TodoTestDataAfter_5.xml"
+  private val beforeData = "./testresources/data/todo/TodoTestDataBefore.xml"
+  private val afterData1 = "./testresources/data/todo/TodoTestDataAfter_1.xml"
+  private val afterData2 = "./testresources/data/todo/TodoTestDataAfter_2.xml"
+  private val afterData3 = "./testresources/data/todo/TodoTestDataAfter_3.xml"
+  private val afterData4 = "./testresources/data/todo/TodoTestDataAfter_4.xml"
+  private val afterData5 = "./testresources/data/todo/TodoTestDataAfter_5.xml"
 
   private val todoService = TodoService()
 
   companion object {
     private lateinit var original: File
-    private val databaseConfig = HikariService.readConfig()
-    private val databaseTester = databaseConfig.run {
+    private val databaseTester = HikariService.readConfig().run {
       JdbcDatabaseTester(driverClass, jdbcUrl, username, password)
     }
 
@@ -51,33 +50,50 @@ class TodoServiceTest {
 
   @Before
   fun setUp() {
-    val dataset: IDataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
-    databaseTester.dataSet = dataset
-    databaseTester.onSetup()
+    databaseTester.apply {
+      dataSet = FlatXmlDataSetBuilder().build(File(beforeData)) as IDataSet
+      onSetup()
+    }
   }
 
   @Test
   fun find() {
     val actual = todoService.find()
-    val expected = Todo(
-      todo_id = 1,
-      minutes_id = 1,
-      project_id = 1,
-      user_id = 1,
-      task_title = "おひるごはん",
-      task_body = "おひるごはんを決める",
-      start_time_stamp = "2020-01-23 12:14:47.0",
-      end_time_stamp = "2020-01-23 12:14:47.0",
-      status = false
+    val expected = listOf(
+      Todo(
+        todo_id = 1,
+        minutes_id = 1,
+        project_id = 1,
+        user_id = 1,
+        task_title = "おひるごはん",
+        task_body = "おひるごはんを決める",
+        start_time_stamp = "2020-01-23 12:14:47.0",
+        end_time_stamp = "2020-01-23 12:14:47.0",
+        status = false
+      ),
+      Todo(
+        todo_id = 2,
+        minutes_id = 1,
+        project_id = 1,
+        user_id = 1,
+        task_title = "ばんごはん",
+        task_body = "ばんごはんを決める",
+        start_time_stamp = "2020-01-23 12:14:47.0",
+        end_time_stamp = "2020-01-23 12:14:47.0",
+        status = false
+      )
     )
 
-    assertEquals(expected.todo_id, actual[0].todo_id)
-    assertEquals(expected.minutes_id, actual[0].minutes_id)
-    assertEquals(expected.project_id, actual[0].project_id)
-    assertEquals(expected.user_id, actual[0].user_id)
-    assertEquals(expected.task_title, actual[0].task_title)
-    assertEquals(expected.task_body, actual[0].task_body)
-    assertEquals(expected.status, actual[0].status)
+    assertEquals(expected.count(), actual.count())
+    expected.zip(actual).forEach { pair ->
+      assertEquals(pair.first.todo_id, pair.second.todo_id)
+      assertEquals(pair.first.minutes_id, pair.second.minutes_id)
+      assertEquals(pair.first.project_id, pair.second.project_id)
+      assertEquals(pair.first.user_id, pair.second.user_id)
+      assertEquals(pair.first.task_title, pair.second.task_title)
+      assertEquals(pair.first.task_body, pair.second.task_body)
+      assertEquals(pair.first.status, pair.second.status)
+    }
   }
 
   @Test
@@ -120,19 +136,19 @@ class TodoServiceTest {
 
     todoService.insert(todo)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData1))
-    var expectedTable = expectedDataset.getTable("todo")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData1))
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("todo")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   // 複数インサート
@@ -165,19 +181,19 @@ class TodoServiceTest {
 
     todoService.insertMulti(todoList)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData2))
-    var expectedTable = expectedDataset.getTable("todo")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData2))
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("todo")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   // 複数インサート：異常系
@@ -214,19 +230,19 @@ class TodoServiceTest {
       println(e.message)
     }
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData3))
-    var expectedTable = expectedDataset.getTable("todo")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData3))
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("todo")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
@@ -245,37 +261,37 @@ class TodoServiceTest {
 
     todoService.update(todo)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData4))
-    var expectedTable = expectedDataset.getTable("todo")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData4))
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("todo")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 
   @Test
   fun delete() {
     todoService.delete(1)
 
-    val expectedDataset = FlatXmlDataSetBuilder().build(File(afterData5))
-    var expectedTable = expectedDataset.getTable("todo")
-    expectedTable = DefaultColumnFilter.excludedColumnsTable(
-      expectedTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val expected = FlatXmlDataSetBuilder().build(File(afterData5))
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    val databaseDataset = databaseTester.connection.createDataSet()
-    var actualTable = databaseDataset.getTable("todo")
-    actualTable = DefaultColumnFilter.excludedColumnsTable(
-      actualTable, arrayOf("todo_id", "start_time_stamp", "end_time_stamp")
-    )
+    val actual = databaseTester.connection.createDataSet()
+      .getTable("todo")
+      .let {
+        DefaultColumnFilter.excludedColumnsTable(it, arrayOf("todo_id", "start_time_stamp", "end_time_stamp"))
+      }
 
-    Assertion.assertEquals(expectedTable, actualTable)
+    Assertion.assertEquals(expected, actual)
   }
 }

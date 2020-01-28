@@ -2,5 +2,5 @@
   "driverClass": "org.postgresql.Driver",
   "jdbcUrl": "jdbc:postgresql://localhost/endurance",
   "username": "postgres",
-  "password": "1203"
+  "password": "postgres"
 }

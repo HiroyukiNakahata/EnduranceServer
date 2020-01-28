@@ -40,7 +40,7 @@ class MinutesSummaryService : IMinutesSummaryService {
       con.prepareStatement(
         """
         SELECT m.minutes_id,
-               u.first_name,
+               u.first_name || ' ' || u.last_name AS name,
                p.project_name,
                p.client,
                m.place,
@@ -75,7 +75,7 @@ class MinutesSummaryService : IMinutesSummaryService {
       con.prepareStatement(
         """
         SELECT m.minutes_id,
-               u.first_name,
+               u.first_name || ' ' || u.last_name AS name,
                p.project_name,
                p.client,
                m.place,
@@ -109,7 +109,7 @@ class MinutesSummaryService : IMinutesSummaryService {
       con.prepareStatement(
         """
         SELECT m.minutes_id,
-               u.first_name,
+               u.first_name || ' ' || u.last_name AS name,
                p.project_name,
                p.client,
                m.place,
@@ -146,7 +146,7 @@ class MinutesSummaryService : IMinutesSummaryService {
       con.prepareStatement(
         """
         SELECT m.minutes_id,
-               u.first_name,
+               u.first_name || ' ' || u.last_name AS name,
                p.project_name,
                p.client,
                m.place,
@@ -180,7 +180,7 @@ class MinutesSummaryService : IMinutesSummaryService {
       con.prepareStatement(
         """
         SELECT m.minutes_id,
-               u.first_name,
+               u.first_name || ' ' || u.last_name AS name,
                p.project_name,
                p.client,
                m.place,

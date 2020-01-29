@@ -1,5 +1,7 @@
 package com.endurance.model
 
+import io.ktor.auth.Principal
+
 data class User(
   val user_id: Int,
   val first_name: String,
@@ -8,6 +10,8 @@ data class User(
 ) {
   constructor(): this(0, "", "", "")
 }
+
+data class IdPrincipal(val id: Int): Principal
 
 interface IUserService {
   fun find(): List<User>

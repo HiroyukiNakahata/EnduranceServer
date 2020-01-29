@@ -1,10 +1,9 @@
 package com.endurance.service
 
-import com.endurance.model.Todo
 import com.endurance.model.ITodoService
+import com.endurance.model.Todo
 import java.sql.ResultSet
 import java.sql.SQLException
-import java.sql.Timestamp
 
 class TodoService : ITodoService {
   override fun find(): List<Todo> {
@@ -202,8 +201,16 @@ class TodoServiceStub : ITodoService {
   override fun find(): List<Todo> {
     return listOf(
       Todo(
-        1, 1, 1, 1, "test", "test",
-        "2020-01-23 12:14:47", "2020-01-23 12:14:47", false
+        1, 1, 1, 1, "四次元方程式を解く", "時空間４次元を表現する数式",
+        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
+      ),
+      Todo(
+        2, 3, 3, 1, "先行事例調査", "海外論文のリサーチ",
+        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
+      ),
+      Todo(
+        3, 3, 3, 1, "経緯をまとめる", "報告書作成",
+        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
       )
     )
   }
@@ -211,8 +218,8 @@ class TodoServiceStub : ITodoService {
   override fun find(id: Int): Todo {
     return when (id) {
       1 -> Todo(
-        1, 1, 1, 1, "test", "test",
-        "2020-01-23 12:14:47", "2020-01-23 12:14:47", false
+        1, 1, 1, 1, "四次元方程式を解く", "時空間４次元を表現する数式",
+        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
       )
       else -> Todo()
     }

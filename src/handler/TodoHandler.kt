@@ -44,6 +44,8 @@ fun Route.todoHandler(
       }
     }
 
+    // TODO: マルチインサート実装
+
     put {
       val todo = call.receiveOrNull() ?: Todo()
       when {

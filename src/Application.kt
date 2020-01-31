@@ -1,6 +1,6 @@
 package com.endurance
 
-import com.endurance.authentication.HashUtil
+import com.endurance.authentication.AuthenticationException
 import com.endurance.authentication.JwtAuth
 import com.endurance.handler.*
 import com.endurance.injector.Injector
@@ -10,7 +10,6 @@ import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.auth.authentication
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
@@ -19,8 +18,6 @@ import io.ktor.gson.gson
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.path
 import io.ktor.response.respond
-import io.ktor.routing.get
-import io.ktor.routing.post
 import io.ktor.routing.routing
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
@@ -61,50 +58,54 @@ fun Application.module(testing: Boolean = false) {
       loggerSQL.error(cause.sqlState)
       call.respond(HttpStatusCode.InternalServerError)
     }
+
+    exception<AuthenticationException> {
+      call.respond(HttpStatusCode.Unauthorized)
+    }
   }
 
   routing {
     rootHandler("/")
-    userHandler(
-      "/api/user",
+
+    loginHandler(
+      "/login",
       Injector.getUserService()
     )
-    projectHandler(
-      "/api/project",
-      Injector.getProjectService()
-    )
-    minutesHandler(
-      "/api/minutes",
-      Injector.getMinutesService(),
-      Injector.getMinutesSummaryService(),
-      Injector.getMinutesAllService()
-    )
-    pictureHandler(
-      "/api/picture",
-      Injector.getPictureService(),
-      Injector.getSaveFileOperation(),
-      Injector.getDeleteFileOperation()
-    )
-    attendeeHandler(
-      "/api/attendee",
-      Injector.getAttendeeService()
-    )
-    todoHandler(
-      "/api/todo",
-      Injector.getTodoService()
-    )
-
-    post("/login") {
-      val token = JwtAuth.createToken(1, System.currentTimeMillis())
-      call.respond(token)
-    }
 
     authenticate {
-      get("/secure") {
-        val id = call.authentication.principal<IdPrincipal>()?.id ?: 0
-        val hashTest = HashUtil.sha512("hashTest")
-        call.respond(hashTest)
-      }
+      userHandler(
+        "/api/user",
+        Injector.getUserService()
+      )
+
+      projectHandler(
+        "/api/project",
+        Injector.getProjectService()
+      )
+
+      minutesHandler(
+        "/api/minutes",
+        Injector.getMinutesService(),
+        Injector.getMinutesSummaryService(),
+        Injector.getMinutesAllService()
+      )
+
+      pictureHandler(
+        "/api/picture",
+        Injector.getPictureService(),
+        Injector.getSaveFileOperation(),
+        Injector.getDeleteFileOperation()
+      )
+
+      attendeeHandler(
+        "/api/attendee",
+        Injector.getAttendeeService()
+      )
+
+      todoHandler(
+        "/api/todo",
+        Injector.getTodoService()
+      )
     }
   }
 }

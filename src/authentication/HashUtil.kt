@@ -3,10 +3,11 @@ package com.endurance.authentication
 import java.security.MessageDigest
 
 object HashUtil {
+  private const val salt = "DigitalDesignLab"
 
-  fun sha512(input: String) = hashString("SHA-512", input)
+  fun sha512(input: String) = hashString("SHA-512", input + salt)
 
-  fun sha256(input: String) = hashString("SHA-256", input)
+  fun sha256(input: String) = hashString("SHA-256", input + salt)
 
   private fun hashString(type: String, input: String): String {
     val hexChars = "0123456789ABCDEF"

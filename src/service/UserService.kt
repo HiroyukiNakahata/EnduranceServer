@@ -46,22 +46,44 @@ class UserService : IUserService {
     }
   }
 
-  override fun insert(user: User) {
+  override fun findByMailAddress(mail_address: String): Pair<String, Int> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
-        INSERT INTO users(first_name, last_name, mail_address)
-        VALUES (?, ?, ?)
+          SELECT password, user_id
+          FROM users
+          WHERE mail_address = ?
+        """
+      ).use { ps ->
+        ps.setString(1, mail_address)
+        ps.executeQuery().use { rows ->
+          return when {
+            rows.next() -> Pair(rows.getString(1), rows.getInt(2))
+            else -> Pair("", 0)
+          }
+        }
+      }
+    }
+  }
+
+  override fun insert(user: User, password: String) {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        INSERT INTO users(first_name, last_name, mail_address, password)
+        VALUES (?, ?, ?, ?)
         ON CONFLICT (mail_address)
-        DO UPDATE SET first_name=?, last_name=?
+        DO UPDATE SET first_name = ?, last_name = ?, password = ?
       """
       ).use { ps ->
         ps.run {
           setString(1, user.first_name)
           setString(2, user.last_name)
           setString(3, user.mail_address)
-          setString(4, user.first_name)
-          setString(5, user.last_name)
+          setString(4, password)
+          setString(5, user.first_name)
+          setString(6, user.last_name)
+          setString(7, password)
           execute()
         }
       }
@@ -127,7 +149,11 @@ class UserServiceStub : IUserService {
     }
   }
 
-  override fun insert(user: User) {}
+  override fun findByMailAddress(mail_address: String): Pair<String, Int> {
+    return Pair("OK", 1)
+  }
+
+  override fun insert(user: User, password: String) {}
   override fun update(user: User) {}
   override fun delete(id: Int) {}
 }

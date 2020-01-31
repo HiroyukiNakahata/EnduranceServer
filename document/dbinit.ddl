@@ -16,7 +16,8 @@ create table if not exists users
             primary key,
     first_name text not null,
     last_name text not null,
-    mail_address text not null
+    mail_address text not null,
+    password text not null
 );
 
 alter table users owner to postgres;
@@ -101,3 +102,4 @@ create table if not exists todo
 );
 
 alter table todo owner to postgres;
+

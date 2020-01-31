@@ -1,5 +1,6 @@
 package service
 
+import com.endurance.authentication.HashUtil
 import com.endurance.model.User
 import com.endurance.service.HikariService
 import com.endurance.service.UserService
@@ -59,15 +60,21 @@ class UserServiceTest {
     val expected = listOf(
       User(
         user_id = 1,
-        first_name = "hiroyuki",
-        last_name = "nakahata",
+        first_name = "Hiroyuki",
+        last_name = "Nakahata",
         mail_address = "nakahata@gumi.co.jp"
       ),
       User(
         user_id = 2,
-        first_name = "fizz",
-        last_name = "buzz",
-        mail_address = "fizzbuzz@gumi.co.jp"
+        first_name = "David",
+        last_name = "Hilbert",
+        mail_address = "hilbert@gumi.co.jp"
+      ),
+      User(
+        user_id = 3,
+        first_name = "Henri",
+        last_name = "Poincare",
+        mail_address = "poincare@gumi.co.jp"
       )
     )
 
@@ -82,9 +89,20 @@ class UserServiceTest {
     val actual = userService.find(1)
     val expected = User(
       user_id = 1,
-      first_name = "hiroyuki",
-      last_name = "nakahata",
+      first_name = "Hiroyuki",
+      last_name = "Nakahata",
       mail_address = "nakahata@gumi.co.jp"
+    )
+
+    assertEquals(expected, actual)
+  }
+
+  @Test
+  fun findByMailAddress() {
+    val actual = userService.findByMailAddress("nakahata@gumi.co.jp")
+    val expected = Pair(
+      "9FD89A274AE758D9D8D98588C367B6C5C77F3C67EF58B26F1AB432EB56EBC0377C80DF2161151A132C69E9039E8DF4B022C28D6C1F0D0FFE66631701993B5582",
+      1
     )
 
     assertEquals(expected, actual)
@@ -93,13 +111,13 @@ class UserServiceTest {
   @Test
   fun insert() {
     val user = User(
-      user_id = 2,
-      first_name = "hoge",
-      last_name = "fuga",
-      mail_address = "hogehoge@gumi.co.jp"
+      user_id = 1,
+      first_name = "Joseph",
+      last_name = "Fourier",
+      mail_address = "fourier@gumi.co.jp"
     )
 
-    userService.insert(user)
+    userService.insert(user, HashUtil.sha512("gumi9393"))
 
     val expected = FlatXmlDataSetBuilder().build(File(afterData1))
       .getTable("users")
@@ -119,10 +137,10 @@ class UserServiceTest {
   @Test
   fun update() {
     val user = User(
-      user_id = 1,
-      first_name = "test",
-      last_name = "sample",
-      mail_address = "sample@gumi.co.jp"
+      user_id = 2,
+      first_name = "George",
+      last_name = "Boole",
+      mail_address = "boole@gumi.co.jp"
     )
 
     userService.update(user)
@@ -138,7 +156,7 @@ class UserServiceTest {
 
   @Test
   fun delete() {
-    userService.delete(1)
+    userService.delete(2)
 
     val expected = FlatXmlDataSetBuilder().build(File(afterData3))
       .getTable("users")

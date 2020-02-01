@@ -1,5 +1,6 @@
 package com.endurance.routing
 
+import com.endurance.authentication.JwtAuth
 import com.endurance.model.Todo
 import com.endurance.module
 import com.google.gson.Gson
@@ -10,16 +11,26 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class TodoRoutingTest {
 
+  private var token = ""
+
+  @BeforeTest
+  fun beforeTest() {
+    token = JwtAuth.createToken(1, System.currentTimeMillis())
+  }
+
   // GETで全件取得
   @Test
   fun testTodo_1() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/todo").apply {
+      handleRequest(HttpMethod.Get, "/api/todo"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val todo = Gson().fromJson(this, Array<Todo>::class.java)
@@ -40,7 +51,9 @@ class TodoRoutingTest {
   @Test
   fun testTodo_2() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/todo/1").apply {
+      handleRequest(HttpMethod.Get, "/api/todo/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val todo = Gson().fromJson(this, Todo::class.java)
@@ -60,7 +73,9 @@ class TodoRoutingTest {
   @Test
   fun testTodo_3() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/todo/2").apply {
+      handleRequest(HttpMethod.Get, "/api/todo/2"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.NotFound, response.status())
       }
     }
@@ -70,7 +85,9 @@ class TodoRoutingTest {
   @Test
   fun testTodo_4() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/todo/hoge").apply {
+      handleRequest(HttpMethod.Get, "/api/todo/hoge"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.BadRequest, response.status())
       }
     }
@@ -81,6 +98,7 @@ class TodoRoutingTest {
   fun testTodo_5() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/todo") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(
           Todo(
@@ -110,6 +128,7 @@ class TodoRoutingTest {
   fun testTodo_6() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/todo") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(
           Todo(
@@ -131,6 +150,7 @@ class TodoRoutingTest {
   fun testTodo_10() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/todo") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(
           Todo(
@@ -160,6 +180,7 @@ class TodoRoutingTest {
   fun testTodo_11() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/todo") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(
           Todo(
@@ -178,7 +199,9 @@ class TodoRoutingTest {
   @Test
   fun testTodo_12() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Delete, "/api/todo/1").apply {
+      handleRequest(HttpMethod.Delete, "/api/todo/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
       }
     }
@@ -188,7 +211,9 @@ class TodoRoutingTest {
   @Test
   fun testTodo_13() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Delete, "/api/todo/hoge").apply {
+      handleRequest(HttpMethod.Delete, "/api/todo/hoge"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.BadRequest, response.status())
       }
     }

@@ -1,5 +1,6 @@
 package com.endurance.routing
 
+import com.endurance.authentication.JwtAuth
 import com.endurance.model.Attendee
 import com.endurance.module
 import com.google.gson.Gson
@@ -10,24 +11,38 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class AttendeeRoutingTest {
 
+  private var token = ""
+
+  @BeforeTest
+  fun beforeTest() {
+    token = JwtAuth.createToken(1, System.currentTimeMillis())
+  }
+
   // GETで全件取得
   @Test
   fun testAttendee_1() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/attendee").apply {
+      handleRequest(HttpMethod.Get, "/api/attendee") {
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val attendees = Gson().fromJson(this, Array<Attendee>::class.java)
-          assertEquals(1, attendees.count())
+          assertEquals(2, attendees.count())
           assertEquals(1, attendees[0].attendee_id)
           assertEquals(1, attendees[0].minutes_id)
-          assertEquals("test", attendees[0].attendee_name)
+          assertEquals("sample", attendees[0].attendee_name)
           assertEquals("sample.inc", attendees[0].organization)
+          assertEquals(2, attendees[1].attendee_id)
+          assertEquals(3, attendees[1].minutes_id)
+          assertEquals("testAttendee", attendees[1].attendee_name)
+          assertEquals("testAttendee.inc", attendees[1].organization)
         }
       }
     }
@@ -37,13 +52,15 @@ class AttendeeRoutingTest {
   @Test
   fun testAttendee_2() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/attendee/1").apply {
+      handleRequest(HttpMethod.Get, "/api/attendee/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val attendees = Gson().fromJson(this, Attendee::class.java)
           assertEquals(1, attendees.attendee_id)
           assertEquals(1, attendees.minutes_id)
-          assertEquals("test", attendees.attendee_name)
+          assertEquals("sample", attendees.attendee_name)
           assertEquals("sample.inc", attendees.organization)
         }
       }
@@ -54,7 +71,9 @@ class AttendeeRoutingTest {
   @Test
   fun testAttendee_3() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/attendee/2").apply {
+      handleRequest(HttpMethod.Get, "/api/attendee/2"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.NotFound, response.status())
       }
     }
@@ -64,7 +83,9 @@ class AttendeeRoutingTest {
   @Test
   fun testAttendee_4() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/attendee/hoge").apply {
+      handleRequest(HttpMethod.Get, "/api/attendee/hoge"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.BadRequest, response.status())
       }
     }
@@ -75,15 +96,16 @@ class AttendeeRoutingTest {
   fun testAttendee_5() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/attendee") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-        setBody(Gson().toJson(Attendee(1, 1, "test", "sample.inc")))
+        setBody(Gson().toJson(Attendee(1, 1, "sample", "sample.inc")))
       }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val attendee = Gson().fromJson(this, Attendee::class.java)
           assertEquals(1, attendee.attendee_id)
           assertEquals(1, attendee.minutes_id)
-          assertEquals("test", attendee.attendee_name)
+          assertEquals("sample", attendee.attendee_name)
           assertEquals("sample.inc", attendee.organization)
         }
       }
@@ -95,6 +117,7 @@ class AttendeeRoutingTest {
   fun testAttendee_6() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/attendee") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Attendee(1, 1, "", "")))
       }.apply {
@@ -108,6 +131,7 @@ class AttendeeRoutingTest {
   fun testAttendee_7() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/attendee/multi") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(
           Gson().toJson(
@@ -145,6 +169,7 @@ class AttendeeRoutingTest {
   fun testAttendee_8() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/attendee/multi") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(
           Gson().toJson(
@@ -166,6 +191,7 @@ class AttendeeRoutingTest {
   fun testAttendee_9() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/attendee/multi") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(
           Gson().toJson(
@@ -183,15 +209,16 @@ class AttendeeRoutingTest {
   fun testAttendee_10() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/attendee") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
-        setBody(Gson().toJson(Attendee(1, 1, "test", "sample.inc")))
+        setBody(Gson().toJson(Attendee(1, 1, "sample", "sample.inc")))
       }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val attendee = Gson().fromJson(this, Attendee::class.java)
           assertEquals(1, attendee.attendee_id)
           assertEquals(1, attendee.minutes_id)
-          assertEquals("test", attendee.attendee_name)
+          assertEquals("sample", attendee.attendee_name)
           assertEquals("sample.inc", attendee.organization)
         }
       }
@@ -203,6 +230,7 @@ class AttendeeRoutingTest {
   fun testAttendee_11() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/attendee") {
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Attendee(1, 1, "", "")))
       }.apply {
@@ -215,7 +243,9 @@ class AttendeeRoutingTest {
   @Test
   fun testAttendee_12() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Delete, "/api/attendee/1").apply {
+      handleRequest(HttpMethod.Delete, "/api/attendee/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
       }
     }
@@ -225,7 +255,9 @@ class AttendeeRoutingTest {
   @Test
   fun testAttendee_13() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Delete, "/api/attendee/hoge").apply {
+      handleRequest(HttpMethod.Delete, "/api/attendee/hoge"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.BadRequest, response.status())
       }
     }

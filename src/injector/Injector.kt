@@ -6,7 +6,6 @@ import com.endurance.model.*
 import com.endurance.service.*
 import io.ktor.http.content.PartData
 
-
 object Injector {
   var testing: Boolean = false
 

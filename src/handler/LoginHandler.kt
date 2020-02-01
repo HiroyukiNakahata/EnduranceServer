@@ -1,5 +1,6 @@
 package com.endurance.handler
 
+import com.endurance.authentication.AuthenticationException
 import com.endurance.authentication.HashUtil
 import com.endurance.authentication.JwtAuth
 import com.endurance.model.IUserService
@@ -21,7 +22,11 @@ fun Route.loginHandler(
     post {
       val userLogin = call.receiveOrNull() ?: UserLogin()
       val userHash = HashUtil.sha512(userLogin.password)
-      val fromDb = userService.findByMailAddress(userLogin.mail_address)
+      val fromDb = userService.findPasswordByMailAddress(userLogin.mail_address)
+
+      when (fromDb.second) {
+        0 -> throw AuthenticationException()
+      }
 
       when (userHash) {
         fromDb.first -> {

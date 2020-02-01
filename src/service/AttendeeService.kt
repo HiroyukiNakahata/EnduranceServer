@@ -1,7 +1,7 @@
 package com.endurance.service
 
-import com.endurance.model.IAttendeeService
 import com.endurance.model.Attendee
+import com.endurance.model.IAttendeeService
 import java.sql.ResultSet
 import java.sql.SQLException
 
@@ -148,7 +148,10 @@ class AttendeeServiceStub : IAttendeeService {
   override fun find(): List<Attendee> {
     return listOf(
       Attendee(
-        1, 1, "test", "sample.inc"
+        1, 1, "sample", "sample.inc"
+      ),
+      Attendee(
+        2, 3, "testAttendee", "testAttendee.inc"
       )
     )
   }
@@ -156,7 +159,7 @@ class AttendeeServiceStub : IAttendeeService {
   override fun find(id: Int): Attendee {
     return when (id) {
       1 -> Attendee(
-        1, 1, "test", "sample.inc"
+        1, 1, "sample", "sample.inc"
       )
       else -> Attendee()
     }

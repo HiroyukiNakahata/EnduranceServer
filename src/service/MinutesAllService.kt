@@ -130,17 +130,31 @@ class MinutesAllServiceStub : IMinutesAllService {
     return listOf(
       MinutesAll(
         1,
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        listOf("sample.jpg"),
-        listOf("sample"),
-        listOf("sample"),
-        "2020-01-23 12:14:47"
+        "Hiroyuki Nakahata",
+        "リーマン幾何学",
+        "リーマン研究所",
+        "Ebisu",
+        "リーマン幾何とその応用",
+        "興味深い知見",
+        "物理学からのアプローチ",
+        listOf("2020-01-29_03-42-51-594-1336023490071.png"),
+        listOf("Fermat", "Leibniz"),
+        listOf("harajuku.inc", "roppongi.inc"),
+        "2020-01-23 12:14:47+09"
+      ),
+      MinutesAll(
+        2,
+        "David Hilbert",
+        "複素多様体",
+        "複素研究所",
+        "Shibuya",
+        "複素多様体の応用分野",
+        "エレガントな証明とその応用",
+        "量子力学との親和性",
+        listOf(),
+        listOf("Turing"),
+        listOf("gotanda.inc"),
+        "2020-01-23 12:14:47+09"
       )
     )
   }
@@ -149,17 +163,17 @@ class MinutesAllServiceStub : IMinutesAllService {
     return when (id) {
       1 -> MinutesAll(
         1,
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        "test",
-        listOf("sample.jpg"),
-        listOf("sample"),
-        listOf("sample"),
-        "2020-01-23 12:14:47"
+        "Hiroyuki Nakahata",
+        "リーマン幾何学",
+        "リーマン研究所",
+        "Ebisu",
+        "リーマン幾何とその応用",
+        "興味深い知見",
+        "物理学からのアプローチ",
+        listOf("2020-01-29_03-42-51-594-1336023490071.png"),
+        listOf("Fermat", "Leibniz"),
+        listOf("harajuku.inc", "roppongi.inc"),
+        "2020-01-23 12:14:47+09"
       )
       else -> MinutesAll()
     }

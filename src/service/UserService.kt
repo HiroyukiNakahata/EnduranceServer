@@ -46,7 +46,7 @@ class UserService : IUserService {
     }
   }
 
-  override fun findByMailAddress(mail_address: String): Pair<String, Int> {
+  override fun findPasswordByMailAddress(mail_address: String): Pair<String, Int> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -149,8 +149,11 @@ class UserServiceStub : IUserService {
     }
   }
 
-  override fun findByMailAddress(mail_address: String): Pair<String, Int> {
-    return Pair("OK", 1)
+  override fun findPasswordByMailAddress(mail_address: String): Pair<String, Int> {
+    return Pair(
+      "9FD89A274AE758D9D8D98588C367B6C5C77F3C67EF58B26F1AB432EB56EBC0377C80DF2161151A132C69E9039E8DF4B022C28D6C1F0D0FFE66631701993B5582",
+      1
+    )
   }
 
   override fun insert(user: User, password: String) {}

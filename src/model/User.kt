@@ -33,7 +33,7 @@ data class IdPrincipal(val id: Int): Principal
 interface IUserService {
   fun find(): List<User>
   fun find(id: Int): User
-  fun findByMailAddress(mail_address: String): Pair<String, Int>
+  fun findPasswordByMailAddress(mail_address: String): Pair<String, Int>
   fun insert(user: User, password: String)
   fun update(user: User)
   fun delete(id: Int)

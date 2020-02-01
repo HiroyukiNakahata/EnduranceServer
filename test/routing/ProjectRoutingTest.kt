@@ -1,5 +1,6 @@
 package com.endurance.routing
 
+import com.endurance.authentication.JwtAuth
 import com.endurance.model.Project
 import com.endurance.module
 import com.google.gson.Gson
@@ -10,16 +11,26 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.setBody
 import io.ktor.server.testing.withTestApplication
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ProjectRoutingTest {
 
+  private var token = ""
+
+  @BeforeTest
+  fun beforeTest() {
+    token = JwtAuth.createToken(1, System.currentTimeMillis())
+  }
+
   // GETで全件取得
   @Test
   fun testProject_1() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/project").apply {
+      handleRequest(HttpMethod.Get, "/api/project"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val projects = Gson().fromJson(this, Array<Project>::class.java)
@@ -36,7 +47,9 @@ class ProjectRoutingTest {
   @Test
   fun testProject_2() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/project/1").apply {
+      handleRequest(HttpMethod.Get, "/api/project/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
         response.content?.run {
           val project = Gson().fromJson(this, Project::class.java)
@@ -52,7 +65,9 @@ class ProjectRoutingTest {
   @Test
   fun testProject_3() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/project/3").apply {
+      handleRequest(HttpMethod.Get, "/api/project/3"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.NotFound, response.status())
       }
     }
@@ -63,6 +78,7 @@ class ProjectRoutingTest {
   fun testProject_4() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/project"){
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Project(1, "test", "sample")))
       }.apply {
@@ -82,6 +98,7 @@ class ProjectRoutingTest {
   fun testProject_5() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Post, "/api/project"){
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Project(1, "", "")))
       }.apply {
@@ -95,6 +112,7 @@ class ProjectRoutingTest {
   fun testProject_6() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/project"){
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Project(1, "test", "sample")))
       }.apply {
@@ -114,6 +132,7 @@ class ProjectRoutingTest {
   fun testProject_7() {
     withTestApplication({ module(testing = true) }) {
       handleRequest(HttpMethod.Put, "/api/project"){
+        addHeader("Authorization", "Bearer $token")
         addHeader(HttpHeaders.ContentType, ContentType.Application.Json.toString())
         setBody(Gson().toJson(Project(1, "", "")))
       }.apply {
@@ -126,7 +145,9 @@ class ProjectRoutingTest {
   @Test
   fun testProject_8() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Delete, "/api/project/1").apply {
+      handleRequest(HttpMethod.Delete, "/api/project/1"){
+        addHeader("Authorization", "Bearer $token")
+      }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
       }
     }

@@ -11,8 +11,12 @@ data class Picture(
 
 interface IPictureService {
   fun find(): List<Picture>
-  fun find(id: Int): Picture
+  fun find(pictureId: Int): Picture
+  fun findByUser(userId: Int): List<Picture>
+  fun findByUser(userId: Int, pictureId: Int): Picture
+  fun findUserIdByPicturePath(picturePath: String): Int
   fun insert(picture: Picture)
   fun update(picture: Picture)
-  fun delete(id: Int)
+  fun delete(pictureId: Int)
+  fun deleteByUser(userId: Int, pictureId: Int): String
 }

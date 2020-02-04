@@ -4,17 +4,19 @@ import com.endurance.authentication.AuthenticationException
 import com.endurance.authentication.HashUtil
 import com.endurance.function.isEmptyUser
 import com.endurance.model.IUserService
-import com.endurance.model.IdPrincipal
 import com.endurance.model.User
 import com.endurance.model.UserCreate
+import com.endurance.user
 import io.ktor.application.ApplicationCallPipeline
 import io.ktor.application.call
-import io.ktor.auth.authentication
+import io.ktor.features.BadRequestException
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.util.KtorExperimentalAPI
 
+@KtorExperimentalAPI
 fun Route.userHandler(
   path: String,
   userService: IUserService
@@ -22,9 +24,8 @@ fun Route.userHandler(
 
   route(path) {
     intercept(ApplicationCallPipeline.Call) {
-      val uid = call.authentication.principal<IdPrincipal>()?.id ?: 0
       when {
-        uid != 1 -> throw AuthenticationException()
+        call.user != 1 -> throw AuthenticationException()
       }
     }
 
@@ -34,15 +35,12 @@ fun Route.userHandler(
     }
 
     get("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          val user = userService.find(id)
-          when (user.user_id) {
-            0 -> call.respond(HttpStatusCode.NotFound)
-            else -> call.respond(user)
-          }
-        }
+      val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      val user = userService.find(id)
+      when (user.user_id) {
+        0 -> call.respond(HttpStatusCode.NotFound)
+        else -> call.respond(user)
       }
     }
 
@@ -75,13 +73,10 @@ fun Route.userHandler(
     }
 
     delete("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          userService.delete(id)
-          call.respond(HttpStatusCode.OK)
-        }
-      }
+      val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      userService.delete(id)
+      call.respond(HttpStatusCode.OK)
     }
   }
 }

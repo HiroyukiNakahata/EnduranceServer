@@ -30,7 +30,7 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun find(id: Int): Attendee {
+  override fun find(attendeeId: Int): Attendee {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -42,7 +42,58 @@ class AttendeeService : IAttendeeService {
         WHERE attendee_id = ?
       """
       ).use { ps ->
-        ps.setInt(1, id)
+        ps.setInt(1, attendeeId)
+        ps.executeQuery().use { rows ->
+          return when {
+            rows.next() -> rowsToAttendee(rows)
+            else -> Attendee()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int): List<Attendee> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT attendee_id,
+               minutes_id,
+               attendee_name,
+               organization
+        FROM attendee a INNER JOIN minutes m USING (minutes_id)
+        WHERE m.user_id = ?
+        ORDER BY attendee_id
+        """
+      ).use { ps ->
+        ps.setInt(1, userId)
+        ps.executeQuery().use { rows ->
+          return generateSequence {
+            when {
+              rows.next() -> rowsToAttendee(rows)
+              else -> null
+            }
+          }.toList()
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int, attendeeId: Int): Attendee {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT attendee_id,
+               minutes_id,
+               attendee_name,
+               organization
+        FROM attendee a INNER JOIN minutes m USING (minutes_id)
+        WHERE m.user_id = ? AND a.attendee_id = ?
+        ORDER BY attendee_id
+        """
+      ).use { ps ->
+        ps.setInt(1, userId)
+        ps.setInt(2, attendeeId)
         ps.executeQuery().use { rows ->
           return when {
             rows.next() -> rowsToAttendee(rows)
@@ -119,7 +170,7 @@ class AttendeeService : IAttendeeService {
     }
   }
 
-  override fun delete(id: Int) {
+  override fun delete(attendeeId: Int) {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -128,7 +179,30 @@ class AttendeeService : IAttendeeService {
       """
       ).use { ps ->
         ps.run {
-          setInt(1, id)
+          setInt(1, attendeeId)
+          execute()
+        }
+      }
+    }
+  }
+
+  override fun deleteByUser(userId: Int, attendeeId: Int) {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+          DELETE FROM attendee
+          WHERE attendee_id = ? AND (
+          SELECT user_id
+           FROM attendee
+            INNER JOIN minutes
+             USING (minutes_id)
+             WHERE attendee_id = ?) = ?
+        """
+      ).use { ps ->
+        ps.run {
+          setInt(1, attendeeId)
+          setInt(2, attendeeId)
+          setInt(3, userId)
           execute()
         }
       }
@@ -156,8 +230,8 @@ class AttendeeServiceStub : IAttendeeService {
     )
   }
 
-  override fun find(id: Int): Attendee {
-    return when (id) {
+  override fun find(attendeeId: Int): Attendee {
+    return when (attendeeId) {
       1 -> Attendee(
         1, 1, "sample", "sample.inc"
       )
@@ -165,8 +239,17 @@ class AttendeeServiceStub : IAttendeeService {
     }
   }
 
+  override fun findByUser(userId: Int): List<Attendee> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun findByUser(userId: Int, attendeeId: Int): Attendee {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
   override fun insert(attendee: Attendee) {}
   override fun insertMulti(attendees: List<Attendee>) {}
   override fun update(attendee: Attendee) {}
-  override fun delete(id: Int) {}
+  override fun delete(attendeeId: Int) {}
+  override fun deleteByUser(userId: Int, attendeeId: Int) {}
 }

@@ -1,3 +1,3 @@
 package com.endurance.authentication
 
-class AuthenticationException: RuntimeException()
+class AuthenticationException : RuntimeException()

@@ -4,11 +4,14 @@ import com.endurance.function.isEmptyProject
 import com.endurance.model.IProjectService
 import com.endurance.model.Project
 import io.ktor.application.call
+import io.ktor.features.BadRequestException
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.util.KtorExperimentalAPI
 
+@KtorExperimentalAPI
 fun Route.projectHandler(
   path: String,
   projectService: IProjectService
@@ -21,15 +24,12 @@ fun Route.projectHandler(
     }
 
     get("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          val project = projectService.find(id)
-          when (project.project_id) {
-            0 -> call.respond(HttpStatusCode.NotFound)
-            else -> call.respond(project)
-          }
-        }
+      val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      val project = projectService.find(id)
+      when (project.project_id) {
+        0 -> call.respond(HttpStatusCode.NotFound)
+        else -> call.respond(project)
       }
     }
 
@@ -56,13 +56,10 @@ fun Route.projectHandler(
     }
 
     delete("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          projectService.delete(id)
-          call.respond(HttpStatusCode.OK)
-        }
-      }
+      val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      projectService.delete(id)
+      call.respond(HttpStatusCode.OK)
     }
   }
 }

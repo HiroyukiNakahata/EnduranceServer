@@ -5,12 +5,16 @@ import com.endurance.model.IMinutesAllService
 import com.endurance.model.IMinutesService
 import com.endurance.model.IMinutesSummaryService
 import com.endurance.model.Minutes
+import com.endurance.user
 import io.ktor.application.call
+import io.ktor.features.BadRequestException
 import io.ktor.http.HttpStatusCode
 import io.ktor.request.receiveOrNull
 import io.ktor.response.respond
 import io.ktor.routing.*
+import io.ktor.util.KtorExperimentalAPI
 
+@KtorExperimentalAPI
 fun Route.minutesHandler(
   path: String,
   minutesService: IMinutesService,
@@ -20,86 +24,65 @@ fun Route.minutesHandler(
 
   route(path) {
     get {
-      val minutes = minutesService.find()
+      val minutes = minutesService.findByUser(call.user)
       call.respond(minutes)
     }
 
     get("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          val minutes = minutesService.find(id)
-          when (minutes.minutes_id) {
-            0 -> call.respond(HttpStatusCode.NotFound)
-            else -> call.respond(minutes)
-          }
-        }
+      val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      val minutes = minutesService.findByUser(call.user, mid)
+      when (minutes.minutes_id) {
+        0 -> call.respond(HttpStatusCode.NotFound)
+        else -> call.respond(minutes)
       }
     }
 
     get("/all") {
-      val minutesAll = minutesAllService.find()
+      val minutesAll = minutesAllService.findByUser(call.user)
       call.respond(minutesAll)
     }
 
     get("/all/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          val minutesAll = minutesAllService.find(id)
-          when (minutesAll.minutes_id) {
-            0 -> call.respond(HttpStatusCode.NotFound)
-            else -> call.respond(minutesAll)
-          }
-        }
+      val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      val minutesAll = minutesAllService.findByUser(call.user, mid)
+      when (minutesAll.minutes_id) {
+        0 -> call.respond(HttpStatusCode.NotFound)
+        else -> call.respond(minutesAll)
       }
     }
 
     get("/summary") {
+      val pid = call.request.queryParameters["project"]?.toIntOrNull()
       val limit = call.request.queryParameters["limit"]?.toIntOrNull()
       val offset = call.request.queryParameters["offset"]?.toIntOrNull()
-      when {
-        limit == null || offset == null -> {
-          val mSummary = minutesSummaryService.find()
-          call.respond(mSummary)
-        }
-        else -> {
-          val mSummary = minutesSummaryService.find(limit, offset)
-          call.respond(mSummary)
-        }
-      }
-    }
 
-    get("/summary/user/{id}") {
-      val id = call.parameters["id"]?.toIntOrNull()
-      val limit = call.request.queryParameters["limit"]?.toIntOrNull()
-      val offset = call.request.queryParameters["offset"]?.toIntOrNull()
-      when {
-        id == null -> call.respond(HttpStatusCode.BadRequest)
-        limit == null || offset == null -> {
-          val mSummary = minutesSummaryService.findByUser(id)
-          call.respond(mSummary)
+      when(pid) {
+        null -> {
+          when {
+            limit == null || offset == null -> {
+              val mSummary = minutesSummaryService.findByUser(call.user)
+              call.respond(mSummary)
+            }
+            else -> {
+              val mSummary = minutesSummaryService.findByUser(call.user, limit, offset)
+              call.respond(mSummary)
+            }
+          }
         }
-        else -> {
-          val mSummary = minutesSummaryService.findByUser(id, limit, offset)
-          call.respond(mSummary)
-        }
-      }
-    }
 
-    get("/summary/project/{id}") {
-      val id = call.parameters["id"]?.toIntOrNull()
-      val limit = call.request.queryParameters["limit"]?.toIntOrNull()
-      val offset = call.request.queryParameters["offset"]?.toIntOrNull()
-      when {
-        id == null -> call.respond(HttpStatusCode.BadRequest)
-        limit == null || offset == null -> {
-          val mSummary = minutesSummaryService.findByProject(id)
-          call.respond(mSummary)
-        }
         else -> {
-          val mSummary = minutesSummaryService.findByProject(id, limit, offset)
-          call.respond(mSummary)
+          when {
+            limit == null || offset == null -> {
+              val mSummary = minutesSummaryService.findByUserAndProject(call.user, pid)
+              call.respond(mSummary)
+            }
+            else -> {
+              val mSummary = minutesSummaryService.findByUserAndProject(call.user, pid, limit, offset)
+              call.respond(mSummary)
+            }
+          }
         }
       }
     }
@@ -108,6 +91,7 @@ fun Route.minutesHandler(
       val minutes = call.receiveOrNull() ?: Minutes()
       when {
         isEmptyMinutes(minutes) -> call.respond(HttpStatusCode.BadRequest)
+        minutes.user_id != call.user -> call.respond(HttpStatusCode.Unauthorized)
         else -> {
           minutesService.insert(minutes)
           call.respond(minutes)
@@ -119,6 +103,7 @@ fun Route.minutesHandler(
       val minutes = call.receiveOrNull() ?: Minutes()
       when {
         isEmptyMinutes(minutes) -> call.respond(HttpStatusCode.BadRequest)
+        minutes.user_id != call.user -> call.respond(HttpStatusCode.Unauthorized)
         else -> {
           minutesService.update(minutes)
           call.respond(minutes)
@@ -127,13 +112,10 @@ fun Route.minutesHandler(
     }
 
     delete("/{id}") {
-      when (val id = call.parameters["id"]?.toIntOrNull()) {
-        null -> call.respond(HttpStatusCode.BadRequest)
-        else -> {
-          minutesService.delete(id)
-          call.respond(HttpStatusCode.OK)
-        }
-      }
+      val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+
+      minutesService.deleteByUser(call.user, mid)
+      call.respond(HttpStatusCode.OK)
     }
   }
 }

@@ -44,10 +44,13 @@ data class MinutesAll(
 
 interface IMinutesService {
   fun find(): List<Minutes>
-  fun find(id: Int): Minutes
+  fun find(minutesId: Int): Minutes
+  fun findByUser(userId: Int): List<Minutes>
+  fun findByUser(userId: Int, minutesId: Int): Minutes
   fun insert(minutes: Minutes)
   fun update(minutes: Minutes)
-  fun delete(id: Int)
+  fun delete(minutesId: Int)
+  fun deleteByUser(userId: Int, minutesId: Int)
 }
 
 interface IMinutesSummaryService {
@@ -55,11 +58,13 @@ interface IMinutesSummaryService {
   fun find(limit: Int, offset: Int): List<MinutesSummary>
   fun findByUser(userId: Int): List<MinutesSummary>
   fun findByUser(userId: Int, limit: Int, offset: Int): List<MinutesSummary>
-  fun findByProject(projectId: Int): List<MinutesSummary>
-  fun findByProject(projectId: Int, limit: Int, offset: Int): List<MinutesSummary>
+  fun findByUserAndProject(userId: Int, projectId: Int): List<MinutesSummary>
+  fun findByUserAndProject(userId: Int, projectId: Int, limit: Int, offset: Int): List<MinutesSummary>
 }
 
 interface IMinutesAllService {
   fun find(): List<MinutesAll>
-  fun find(id: Int): MinutesAll
+  fun find(minutesId: Int): MinutesAll
+  fun findByUser(userId: Int): List<MinutesAll>
+  fun findByUser(userId: Int, minutesId: Int): MinutesAll
 }

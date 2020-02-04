@@ -5,6 +5,7 @@ import com.endurance.model.MinutesSummary
 import java.sql.ResultSet
 
 class MinutesSummaryService : IMinutesSummaryService {
+
   override fun find(): List<MinutesSummary> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
@@ -17,7 +18,7 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.theme,
                m.summary,
                m.time_stamp
-        FROM minutes m 
+        FROM minutes m
         INNER JOIN project p USING (project_id)
         INNER JOIN users u USING (user_id)
         ORDER BY m.minutes_id
@@ -141,7 +142,7 @@ class MinutesSummaryService : IMinutesSummaryService {
     }
   }
 
-  override fun findByProject(projectId: Int): List<MinutesSummary> {
+  override fun findByUserAndProject(userId: Int, projectId: Int): List<MinutesSummary> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -153,15 +154,16 @@ class MinutesSummaryService : IMinutesSummaryService {
                m.theme,
                m.summary,
                m.time_stamp
-        FROM minutes m 
+        FROM minutes m        
         INNER JOIN project p USING (project_id)
         INNER JOIN users u USING (user_id)
-        WHERE p.project_id = ?
+        WHERE u.user_id = ? AND p.project_id = ?
         ORDER BY m.minutes_id
-      """
+        """
       ).use { ps ->
         ps.run {
-          setInt(1, projectId)
+          setInt(1, userId)
+          setInt(2, projectId)
           executeQuery().use { rows ->
             return generateSequence {
               when {
@@ -175,7 +177,7 @@ class MinutesSummaryService : IMinutesSummaryService {
     }
   }
 
-  override fun findByProject(projectId: Int, limit: Int, offset: Int): List<MinutesSummary> {
+  override fun findByUserAndProject(userId: Int, projectId: Int, limit: Int, offset: Int): List<MinutesSummary> {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -190,15 +192,16 @@ class MinutesSummaryService : IMinutesSummaryService {
         FROM minutes m 
         INNER JOIN project p USING (project_id)
         INNER JOIN users u USING (user_id)
-        WHERE p.project_id = ?
+        WHERE u.user_id = ? AND p.project_id = ?
         ORDER BY m.minutes_id
         LIMIT ? OFFSET ?
-      """
+        """
       ).use { ps ->
         ps.run {
-          setInt(1, projectId)
-          setInt(2, limit)
-          setInt(3, offset)
+          setInt(1, userId)
+          setInt(2, projectId)
+          setInt(3, limit)
+          setInt(4, offset)
           executeQuery().use { rows ->
             return generateSequence {
               when {
@@ -306,33 +309,12 @@ class MinutesSummaryServiceStub : IMinutesSummaryService {
     )
   }
 
-  override fun findByProject(projectId: Int): List<MinutesSummary> {
-    return listOf(
-      MinutesSummary(
-        1,
-        "Hiroyuki Nakahata",
-        "リーマン幾何学",
-        "リーマン研究所",
-        "Ebisu",
-        "リーマン幾何とその応用",
-        "興味深い知見",
-        "2020-01-29 00:00:00+09"
-      )
-    )
+  override fun findByUserAndProject(userId: Int, projectId: Int): List<MinutesSummary> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 
-  override fun findByProject(projectId: Int, limit: Int, offset: Int): List<MinutesSummary> {
-    return listOf(
-      MinutesSummary(
-        1,
-        "Limit Offset",
-        "リーマン幾何学",
-        "リーマン研究所",
-        "Ebisu",
-        "リーマン幾何とその応用",
-        "興味深い知見",
-        "2020-01-29 00:00:00+09"
-      )
-    )
+  override fun findByUserAndProject(userId: Int, projectId: Int, limit: Int, offset: Int): List<MinutesSummary> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
+
 }

@@ -57,7 +57,7 @@ class MinutesAllService : IMinutesAllService {
     }
   }
 
-  override fun find(id: Int): MinutesAll {
+  override fun find(minutesId: Int): MinutesAll {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -97,7 +97,114 @@ class MinutesAllService : IMinutesAllService {
         WHERE m1.minutes_id = ?
         """
       ).use { ps ->
-        ps.setInt(1, id)
+        ps.setInt(1, minutesId)
+        ps.executeQuery().use { rows ->
+          return when {
+            rows.next() -> rowsToMinutesAll(rows)
+            else -> MinutesAll()
+          }
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int): List<MinutesAll> {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m1.minutes_id,
+               u.first_name || ' ' || u.last_name AS user_name,
+               pr.project_name,
+               pr.client,
+               m1.place,
+               m1.theme,
+               m1.summary,
+               m1.body_text,
+               m2.picture_path,
+               m1.attendee_name,
+               m1.attendee_organization,
+               m1.time_stamp
+        FROM (SELECT MAX(mi.minutes_id)         AS minutes_id,
+                     MAX(mi.user_id)            AS user_id,
+                     MAX(mi.project_id)         AS project_id,
+                     MAX(mi.place)              AS place,
+                     MAX(mi.theme)              AS theme,
+                     MAX(mi.summary)            AS summary,
+                     MAX(mi.body_text)          AS body_text,
+                     MAX(mi.time_stamp)         AS time_stamp,
+                     ARRAY_AGG(a.attendee_name) AS attendee_name,
+                     ARRAY_AGG(a.organization)  AS attendee_organization
+              FROM minutes AS mi
+                       LEFT OUTER JOIN attendee a USING (minutes_id)
+              WHERE user_id = ?
+              GROUP BY mi.minutes_id) AS m1
+                 INNER JOIN (SELECT MAX(mi2.minutes_id)       AS minutes_id,
+                                    ARRAY_AGG(p.picture_path) AS picture_path
+                             FROM minutes AS mi2
+                                      LEFT OUTER JOIN picture p USING (minutes_id)
+                             GROUP BY mi2.minutes_id) AS m2
+                            USING (minutes_id)
+                 INNER JOIN project pr USING (project_id)
+                 INNER JOIN users u USING (user_id)
+                 ORDER BY m1.minutes_id
+        """
+      ).use { ps ->
+        ps.setInt(1, userId)
+        ps.executeQuery().use { rows ->
+          return generateSequence {
+            when {
+              rows.next() -> rowsToMinutesAll(rows)
+              else -> null
+            }
+          }.toList()
+        }
+      }
+    }
+  }
+
+  override fun findByUser(userId: Int, minutesId: Int): MinutesAll {
+    HikariService.getConnection().use { con ->
+      con.prepareStatement(
+        """
+        SELECT m1.minutes_id,
+               u.first_name || ' ' || u.last_name AS user_name,
+               pr.project_name,
+               pr.client,
+               m1.place,
+               m1.theme,
+               m1.summary,
+               m1.body_text,
+               m2.picture_path,
+               m1.attendee_name,
+               m1.attendee_organization,
+               m1.time_stamp
+        FROM (SELECT MAX(mi.minutes_id)         AS minutes_id,
+                     MAX(mi.user_id)            AS user_id,
+                     MAX(mi.project_id)         AS project_id,
+                     MAX(mi.place)              AS place,
+                     MAX(mi.theme)              AS theme,
+                     MAX(mi.summary)            AS summary,
+                     MAX(mi.body_text)          AS body_text,
+                     MAX(mi.time_stamp)         AS time_stamp,
+                     ARRAY_AGG(a.attendee_name) AS attendee_name,
+                     ARRAY_AGG(a.organization)  AS attendee_organization
+              FROM minutes AS mi
+                       LEFT OUTER JOIN attendee a USING (minutes_id)
+              WHERE user_id = ?
+              GROUP BY mi.minutes_id) AS m1
+                 INNER JOIN (SELECT MAX(mi2.minutes_id)       AS minutes_id,
+                                    ARRAY_AGG(p.picture_path) AS picture_path
+                             FROM minutes AS mi2
+                                      LEFT OUTER JOIN picture p USING (minutes_id)
+                             GROUP BY mi2.minutes_id) AS m2
+                            USING (minutes_id)
+                 INNER JOIN project pr USING (project_id)
+                 INNER JOIN users u USING (user_id)
+        WHERE m1.minutes_id = ?
+        """
+      ).use { ps ->
+        ps.setInt(1, userId)
+        ps.setInt(2, minutesId)
         ps.executeQuery().use { rows ->
           return when {
             rows.next() -> rowsToMinutesAll(rows)
@@ -159,8 +266,8 @@ class MinutesAllServiceStub : IMinutesAllService {
     )
   }
 
-  override fun find(id: Int): MinutesAll {
-    return when (id) {
+  override fun find(minutesId: Int): MinutesAll {
+    return when (minutesId) {
       1 -> MinutesAll(
         1,
         "Hiroyuki Nakahata",
@@ -177,5 +284,13 @@ class MinutesAllServiceStub : IMinutesAllService {
       )
       else -> MinutesAll()
     }
+  }
+
+  override fun findByUser(userId: Int): List<MinutesAll> {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+  }
+
+  override fun findByUser(userId: Int, minutesId: Int): MinutesAll {
+    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
   }
 }

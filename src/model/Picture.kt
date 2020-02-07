@@ -18,5 +18,5 @@ interface IPictureService {
   fun insert(picture: Picture)
   fun update(picture: Picture)
   fun delete(pictureId: Int)
-  fun deleteByUser(userId: Int, pictureId: Int): String
+  fun delete(userId: Int, pictureId: Int): String
 }

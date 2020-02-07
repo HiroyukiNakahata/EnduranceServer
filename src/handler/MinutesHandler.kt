@@ -31,25 +31,22 @@ fun Route.minutesHandler(
     get("/{id}") {
       val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      val minutes = minutesService.findByUser(call.user, mid)
-      when (minutes.minutes_id) {
+      val minutes = minutesService.find(mid)
+      when (minutes.user_id) {
+        call.user -> call.respond(minutes)
         0 -> call.respond(HttpStatusCode.NotFound)
-        else -> call.respond(minutes)
+        else -> call.respond(HttpStatusCode.Unauthorized)
       }
-    }
-
-    get("/all") {
-      val minutesAll = minutesAllService.findByUser(call.user)
-      call.respond(minutesAll)
     }
 
     get("/all/{id}") {
       val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      val minutesAll = minutesAllService.findByUser(call.user, mid)
-      when (minutesAll.minutes_id) {
+      val minutesAll = minutesAllService.find(mid)
+      when (minutesAll.user_id) {
+        call.user -> call.respond(minutesAll)
         0 -> call.respond(HttpStatusCode.NotFound)
-        else -> call.respond(minutesAll)
+        else -> call.respond(HttpStatusCode.Unauthorized)
       }
     }
 
@@ -58,33 +55,17 @@ fun Route.minutesHandler(
       val limit = call.request.queryParameters["limit"]?.toIntOrNull()
       val offset = call.request.queryParameters["offset"]?.toIntOrNull()
 
-      when(pid) {
-        null -> {
-          when {
-            limit == null || offset == null -> {
-              val mSummary = minutesSummaryService.findByUser(call.user)
-              call.respond(mSummary)
-            }
-            else -> {
-              val mSummary = minutesSummaryService.findByUser(call.user, limit, offset)
-              call.respond(mSummary)
-            }
-          }
-        }
+      val mSummary = minutesSummaryService.findByUserAndQuery(call.user, pid, limit, offset)
 
-        else -> {
-          when {
-            limit == null || offset == null -> {
-              val mSummary = minutesSummaryService.findByUserAndProject(call.user, pid)
-              call.respond(mSummary)
-            }
-            else -> {
-              val mSummary = minutesSummaryService.findByUserAndProject(call.user, pid, limit, offset)
-              call.respond(mSummary)
-            }
-          }
-        }
+      call.respond(mSummary)
+    }
+
+    get("/summary/count") {
+      val count = when (val pid = call.request.queryParameters["project"]?.toIntOrNull()) {
+        null -> minutesSummaryService.count(call.user)
+        else -> minutesSummaryService.count(call.user, pid)
       }
+      call.respond(count)
     }
 
     post {
@@ -114,7 +95,7 @@ fun Route.minutesHandler(
     delete("/{id}") {
       val mid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      minutesService.deleteByUser(call.user, mid)
+      minutesService.delete(call.user, mid)
       call.respond(HttpStatusCode.OK)
     }
   }

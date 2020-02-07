@@ -3,6 +3,7 @@ package com.endurance.handler
 import com.endurance.function.isEmptyTodo
 import com.endurance.model.ITodoService
 import com.endurance.model.Todo
+import com.endurance.user
 import io.ktor.application.call
 import io.ktor.features.BadRequestException
 import io.ktor.http.HttpStatusCode
@@ -19,18 +20,34 @@ fun Route.todoHandler(
 
   route(path) {
     get {
-      val todo = todoService.find()
+      val pid = call.request.queryParameters["project"]?.toIntOrNull()
+      val mid = call.request.queryParameters["minutes"]?.toIntOrNull()
+      val status = call.request.queryParameters["status"]?.toBoolean()
+      val limit = call.request.queryParameters["limit"]?.toIntOrNull()
+      val offset = call.request.queryParameters["offset"]?.toIntOrNull()
+
+      val todo = todoService.findByUserAndQuery(call.user, pid, mid, status, limit, offset)
       call.respond(todo)
     }
 
     get("/{id}") {
-      val id = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
+      val tid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      val todo = todoService.find(id)
-      when (todo.todo_id) {
+      val todo = todoService.find(tid)
+      when (todo.user_id) {
+        call.user -> call.respond(todo)
         0 -> call.respond(HttpStatusCode.NotFound)
-        else -> call.respond(todo)
+        else -> call.respond(HttpStatusCode.Unauthorized)
       }
+    }
+
+    get("/count") {
+      val pid = call.request.queryParameters["project"]?.toIntOrNull()
+      val mid = call.request.queryParameters["minutes"]?.toIntOrNull()
+      val status = call.request.queryParameters["status"]?.toBoolean()
+
+      val count = todoService.count(call.user, pid, mid, status)
+      call.respond(count)
     }
 
     post {

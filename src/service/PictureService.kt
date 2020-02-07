@@ -165,7 +165,7 @@ class PictureService : IPictureService {
     }
   }
 
-  override fun deleteByUser(userId: Int, pictureId: Int): String {
+  override fun delete(userId: Int, pictureId: Int): String {
     HikariService.getConnection().use { con ->
       con.prepareStatement(
         """
@@ -218,19 +218,24 @@ class PictureServiceStub : IPictureService {
   }
 
   override fun findByUser(userId: Int): List<Picture> {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return listOf(
+      Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
+    )
   }
 
   override fun findByUser(userId: Int, pictureId: Int): Picture {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return when (pictureId) {
+      1 -> Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
+      else -> Picture()
+    }
   }
 
   override fun findUserIdByPicturePath(picturePath: String): Int {
-    TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    return 1
   }
 
   override fun insert(picture: Picture) {}
   override fun update(picture: Picture) {}
   override fun delete(pictureId: Int) {}
-  override fun deleteByUser(userId: Int, pictureId: Int): String = "image.png"
+  override fun delete(userId: Int, pictureId: Int): String = "image.png"
 }

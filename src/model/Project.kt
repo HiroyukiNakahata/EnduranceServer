@@ -11,6 +11,7 @@ data class Project(
 interface IProjectService {
   fun find(): List<Project>
   fun find(id: Int): Project
+  fun count(): Int
   fun insert(project: Project)
   fun update(project: Project)
   fun delete(id: Int)

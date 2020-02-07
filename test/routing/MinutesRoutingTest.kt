@@ -45,13 +45,13 @@ class MinutesRoutingTest {
           assertEquals("興味深い知見", minutes[0].summary)
           assertEquals("物理学からのアプローチ", minutes[0].body_text)
           assertEquals("2020-01-23 12:14:47", minutes[0].time_stamp)
-          assertEquals(2, minutes[1].minutes_id)
-          assertEquals(2, minutes[1].user_id)
-          assertEquals(2, minutes[1].project_id)
-          assertEquals("Shibuya", minutes[1].place)
-          assertEquals("複素多様体の応用分野", minutes[1].theme)
-          assertEquals("エレガントな証明とその応用", minutes[1].summary)
-          assertEquals("量子力学との親和性", minutes[1].body_text)
+          assertEquals(3, minutes[1].minutes_id)
+          assertEquals(1, minutes[1].user_id)
+          assertEquals(3, minutes[1].project_id)
+          assertEquals("Yoyogi", minutes[1].place)
+          assertEquals("代数的整数論の発展", minutes[1].theme)
+          assertEquals("類対論の進展", minutes[1].summary)
+          assertEquals("平方剰余の相互法則の拡張", minutes[1].body_text)
           assertEquals("2020-01-29 00:00:00.0", minutes[1].time_stamp)
         }
       }
@@ -203,13 +203,13 @@ class MinutesRoutingTest {
           assertEquals("リーマン幾何とその応用", minutesSummary[0].theme)
           assertEquals("興味深い知見", minutesSummary[0].summary)
           assertEquals("2020-01-29 00:00:00+09", minutesSummary[0].time_stamp)
-          assertEquals(2, minutesSummary[1].minutes_id)
-          assertEquals("David Hilbert", minutesSummary[1].user_name)
-          assertEquals("複素多様体", minutesSummary[1].project_name)
-          assertEquals("複素研究所", minutesSummary[1].client)
-          assertEquals("Shibuya", minutesSummary[1].place)
-          assertEquals("複素多様体の応用分野", minutesSummary[1].theme)
-          assertEquals("エレガントな証明とその応用", minutesSummary[1].summary)
+          assertEquals(3, minutesSummary[1].minutes_id)
+          assertEquals("Hiroyuki Nakahata", minutesSummary[1].user_name)
+          assertEquals("代数的整数論", minutesSummary[1].project_name)
+          assertEquals("代数学プログラム", minutesSummary[1].client)
+          assertEquals("Yoyogi", minutesSummary[1].place)
+          assertEquals("代数的整数論の発展", minutesSummary[1].theme)
+          assertEquals("類対論の進展", minutesSummary[1].summary)
           assertEquals("2020-01-29 00:00:00+09", minutesSummary[1].time_stamp)
         }
       }
@@ -246,7 +246,7 @@ class MinutesRoutingTest {
   @Test
   fun testMinutes_6() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/user/1"){
+      handleRequest(HttpMethod.Get, "/api/minutes/summary?project=1"){
         addHeader("Authorization", "Bearer $token")
       }.apply {
         assertEquals(HttpStatusCode.OK, response.status())
@@ -278,10 +278,30 @@ class MinutesRoutingTest {
   @Test
   fun testMinutes_7() {
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/user/hoge"){
+      handleRequest(HttpMethod.Get, "/api/minutes/summary?project=hoge"){
         addHeader("Authorization", "Bearer $token")
       }.apply {
-        assertEquals(HttpStatusCode.BadRequest, response.status())
+        assertEquals(HttpStatusCode.OK, response.status())
+        response.content?.run {
+          val minutesSummary = Gson().fromJson(this, Array<MinutesSummary>::class.java)
+          assertEquals(2, minutesSummary.count())
+          assertEquals(1, minutesSummary[0].minutes_id)
+          assertEquals("Hiroyuki Nakahata", minutesSummary[0].user_name)
+          assertEquals("リーマン幾何学", minutesSummary[0].project_name)
+          assertEquals("リーマン研究所", minutesSummary[0].client)
+          assertEquals("Ebisu", minutesSummary[0].place)
+          assertEquals("リーマン幾何とその応用", minutesSummary[0].theme)
+          assertEquals("興味深い知見", minutesSummary[0].summary)
+          assertEquals("2020-01-29 00:00:00+09", minutesSummary[0].time_stamp)
+          assertEquals(3, minutesSummary[1].minutes_id)
+          assertEquals("Hiroyuki Nakahata", minutesSummary[1].user_name)
+          assertEquals("代数的整数論", minutesSummary[1].project_name)
+          assertEquals("代数学プログラム", minutesSummary[1].client)
+          assertEquals("Yoyogi", minutesSummary[1].place)
+          assertEquals("代数的整数論の発展", minutesSummary[1].theme)
+          assertEquals("類対論の進展", minutesSummary[1].summary)
+          assertEquals("2020-01-29 00:00:00+09", minutesSummary[1].time_stamp)
+        }
       }
     }
   }
@@ -292,69 +312,7 @@ class MinutesRoutingTest {
     val limit = 4
     val offset = 0
     withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/user/1?limit=$limit&offset=$offset"){
-        addHeader("Authorization", "Bearer $token")
-      }.apply {
-        assertEquals(HttpStatusCode.OK, response.status())
-        response.content?.run {
-          val minutesSummary = Gson().fromJson(this, Array<MinutesSummary>::class.java)
-          assertEquals(1, minutesSummary.count())
-          assertEquals(1, minutesSummary[0].minutes_id)
-          assertEquals("Limit Offset", minutesSummary[0].user_name)
-          assertEquals("リーマン幾何学", minutesSummary[0].project_name)
-          assertEquals("リーマン研究所", minutesSummary[0].client)
-          assertEquals("Ebisu", minutesSummary[0].place)
-          assertEquals("リーマン幾何とその応用", minutesSummary[0].theme)
-          assertEquals("興味深い知見", minutesSummary[0].summary)
-          assertEquals("2020-01-29 00:00:00+09", minutesSummary[0].time_stamp)
-        }
-      }
-    }
-  }
-
-  // GETでプロジェクトID指定（サマリ）
-  @Test
-  fun testMinutes_9() {
-    withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/project/1"){
-        addHeader("Authorization", "Bearer $token")
-      }.apply {
-        assertEquals(HttpStatusCode.OK, response.status())
-        response.content?.run {
-          val minutesSummary = Gson().fromJson(this, Array<MinutesSummary>::class.java)
-          assertEquals(1, minutesSummary.count())
-          assertEquals(1, minutesSummary[0].minutes_id)
-          assertEquals("Hiroyuki Nakahata", minutesSummary[0].user_name)
-          assertEquals("リーマン幾何学", minutesSummary[0].project_name)
-          assertEquals("リーマン研究所", minutesSummary[0].client)
-          assertEquals("Ebisu", minutesSummary[0].place)
-          assertEquals("リーマン幾何とその応用", minutesSummary[0].theme)
-          assertEquals("興味深い知見", minutesSummary[0].summary)
-          assertEquals("2020-01-29 00:00:00+09", minutesSummary[0].time_stamp)
-        }
-      }
-    }
-  }
-
-  // GETでプロジェクトID指定（サマリ）：異常系
-  @Test
-  fun testMinutes_10() {
-    withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/project/hoge"){
-        addHeader("Authorization", "Bearer $token")
-      }.apply {
-        assertEquals(HttpStatusCode.BadRequest, response.status())
-      }
-    }
-  }
-
-  // GETでlimit&offset付きプロジェクトID指定（サマリ）
-  @Test
-  fun testMinutes_11() {
-    val limit = 4
-    val offset = 0
-    withTestApplication({ module(testing = true) }) {
-      handleRequest(HttpMethod.Get, "/api/minutes/summary/project/1?limit=$limit&offset=$offset"){
+      handleRequest(HttpMethod.Get, "/api/minutes/summary?project=1&limit=$limit&offset=$offset"){
         addHeader("Authorization", "Bearer $token")
       }.apply {
         assertEquals(HttpStatusCode.OK, response.status())

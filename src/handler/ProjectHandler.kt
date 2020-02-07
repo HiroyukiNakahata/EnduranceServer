@@ -33,6 +33,11 @@ fun Route.projectHandler(
       }
     }
 
+    get("/count") {
+      val count = projectService.count()
+      call.respond(count)
+    }
+
     post {
       val project = call.receiveOrNull() ?: Project()
       when {

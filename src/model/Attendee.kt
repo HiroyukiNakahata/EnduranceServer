@@ -18,5 +18,5 @@ interface IAttendeeService {
   fun insertMulti(attendees: List<Attendee>)
   fun update(attendee: Attendee)
   fun delete(attendeeId: Int)
-  fun deleteByUser(userId: Int, attendeeId: Int)
+  fun delete(userId: Int, attendeeId: Int)
 }

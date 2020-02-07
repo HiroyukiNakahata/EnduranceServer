@@ -1,5 +1,6 @@
 package com.endurance.handler
 
+import com.endurance.authentication.AuthenticationException
 import com.endurance.function.isEmptyAttendee
 import com.endurance.model.Attendee
 import com.endurance.model.IAttendeeService
@@ -41,28 +42,26 @@ fun Route.attendeeHandler(
       val mUid = minutesService.find(attendee.minutes_id).user_id
 
       when {
-        isEmptyAttendee(attendee) -> call.respond(HttpStatusCode.BadRequest)
-        call.user != mUid -> call.respond(HttpStatusCode.Unauthorized)
-        else -> {
-          attendeeService.insert(attendee)
-          call.respond(attendee)
-        }
+        isEmptyAttendee(attendee) -> throw BadRequestException("bad body")
+        call.user != mUid -> throw AuthenticationException()
       }
+
+      attendeeService.insert(attendee)
+      call.respond(attendee)
     }
 
     post("/multi") {
       val attendees = (call.receiveOrNull() ?: arrayOf<Attendee>()).toList()
 
       when (attendees.count()) {
-        0 -> call.respond(HttpStatusCode.BadRequest)
+        0 -> throw BadRequestException("bad body")
+      }
+
+      when (attendees.any { isEmptyAttendee(it) }) {
+        true -> call.respond(HttpStatusCode.BadRequest)
         else -> {
-          when (attendees.any { isEmptyAttendee(it) }) {
-            true -> call.respond(HttpStatusCode.BadRequest)
-            else -> {
-              attendeeService.insertMulti(attendees)
-              call.respond(attendees)
-            }
-          }
+          attendeeService.insertMulti(attendees)
+          call.respond(attendees)
         }
       }
     }
@@ -84,7 +83,7 @@ fun Route.attendeeHandler(
     delete("/{id}") {
       val aid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      attendeeService.deleteByUser(call.user, aid)
+      attendeeService.delete(call.user, aid)
       call.respond(HttpStatusCode.OK)
     }
   }

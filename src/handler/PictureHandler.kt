@@ -89,7 +89,7 @@ fun Route.pictureHandler(
     delete("/{id}") {
       val pid = call.parameters["id"]?.toIntOrNull() ?: throw BadRequestException("bad id")
 
-      when (val fileName = pictureService.deleteByUser(call.user, pid)) {
+      when (val fileName = pictureService.delete(call.user, pid)) {
         "" -> call.respond(HttpStatusCode.NotFound)
         else -> {
           deleteFileOperation(fileName)

@@ -2,18 +2,21 @@ package com.endurance.service
 
 import com.endurance.model.IUserService
 import com.endurance.model.User
+import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
 
 class UserService : IUserService {
+
   override fun find(): List<User> {
+    @Language("SQL")
+    val query = """
+      SELECT user_id, first_name, last_name, mail_address
+      FROM users
+      ORDER BY user_id
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        SELECT user_id, first_name, last_name, mail_address
-        FROM users
-        ORDER BY user_id
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
@@ -27,14 +30,15 @@ class UserService : IUserService {
   }
 
   override fun find(id: Int): User {
+    @Language("SQL")
+    val query = """
+      SELECT user_id, first_name, last_name, mail_address
+      FROM users
+      WHERE user_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        SELECT user_id, first_name, last_name, mail_address
-        FROM users
-        WHERE user_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setInt(1, id)
         ps.executeQuery().use { rows ->
           return when {
@@ -47,14 +51,15 @@ class UserService : IUserService {
   }
 
   override fun findPasswordByMailAddress(mail_address: String): Pair<String, Int> {
+    @Language("SQL")
+    val query = """
+      SELECT password, user_id
+      FROM users
+      WHERE mail_address = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-          SELECT password, user_id
-          FROM users
-          WHERE mail_address = ?
-        """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setString(1, mail_address)
         ps.executeQuery().use { rows ->
           return when {
@@ -67,15 +72,16 @@ class UserService : IUserService {
   }
 
   override fun insert(user: User, password: String) {
+    @Language("SQL")
+    val query = """
+      INSERT INTO users(first_name, last_name, mail_address, password)
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT (mail_address)
+      DO UPDATE SET first_name = ?, last_name = ?, password = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        INSERT INTO users(first_name, last_name, mail_address, password)
-        VALUES (?, ?, ?, ?)
-        ON CONFLICT (mail_address)
-        DO UPDATE SET first_name = ?, last_name = ?, password = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setString(1, user.first_name)
           setString(2, user.last_name)
@@ -91,14 +97,15 @@ class UserService : IUserService {
   }
 
   override fun update(user: User) {
+    @Language("SQL")
+    val query = """
+      UPDATE users
+      SET first_name = ?, last_name = ?, mail_address = ?
+      WHERE user_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        UPDATE users
-        SET first_name = ?, last_name = ?, mail_address = ?
-        WHERE user_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setString(1, user.first_name)
           setString(2, user.last_name)
@@ -111,13 +118,14 @@ class UserService : IUserService {
   }
 
   override fun delete(id: Int) {
+    @Language("SQL")
+    val query = """
+      DELETE FROM users
+      WHERE user_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        DELETE FROM users
-        WHERE user_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, id)
           execute()
@@ -132,31 +140,4 @@ class UserService : IUserService {
     rows.getString(3),
     rows.getString(4)
   )
-}
-
-
-class UserServiceStub : IUserService {
-  override fun find(): List<User> {
-    return listOf(
-      User(1, "test", "test", "test@sample.com")
-    )
-  }
-
-  override fun find(id: Int): User {
-    return when (id) {
-      1 -> User(1, "test", "test", "test@sample.com")
-      else -> User()
-    }
-  }
-
-  override fun findPasswordByMailAddress(mail_address: String): Pair<String, Int> {
-    return Pair(
-      "9FD89A274AE758D9D8D98588C367B6C5C77F3C67EF58B26F1AB432EB56EBC0377C80DF2161151A132C69E9039E8DF4B022C28D6C1F0D0FFE66631701993B5582",
-      1
-    )
-  }
-
-  override fun insert(user: User, password: String) {}
-  override fun update(user: User) {}
-  override fun delete(id: Int) {}
 }

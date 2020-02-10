@@ -39,14 +39,22 @@ data class MinutesAll(
   val attendee_organization: List<String>,
   val time_stamp: String
 ) {
-  constructor(): this(0, 0, "", "", "", "", "", "",
-    "", listOf<String>(), listOf<String>(), listOf<String>(), "")
+  constructor() : this(
+    0, 0, "", "", "", "", "", "",
+    "", listOf<String>(), listOf<String>(), listOf<String>(), ""
+  )
 }
 
 interface IMinutesService {
   fun find(): List<Minutes>
   fun find(minutesId: Int): Minutes
   fun findByUser(userId: Int): List<Minutes>
+  fun <T> findByOperator(
+    filterOp: (minutes: Minutes) -> Boolean,
+    mapperOp: (minutes: Minutes) -> T,
+    takeNum: Int
+  ): List<T>
+
   fun insert(minutes: Minutes)
   fun update(minutes: Minutes)
   fun delete(minutesId: Int)

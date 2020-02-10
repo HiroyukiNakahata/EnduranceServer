@@ -4,6 +4,7 @@ import com.endurance.function.deleteFileItem
 import com.endurance.function.saveFileItem
 import com.endurance.model.*
 import com.endurance.service.*
+import com.endurance.service.stub.*
 import io.ktor.http.content.PartData
 
 object Injector {

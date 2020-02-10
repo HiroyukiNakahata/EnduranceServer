@@ -2,18 +2,21 @@ package com.endurance.service
 
 import com.endurance.model.IPictureService
 import com.endurance.model.Picture
+import org.intellij.lang.annotations.Language
 import java.sql.ResultSet
 
 class PictureService : IPictureService {
+
   override fun find(): List<Picture> {
+    @Language("SQL")
+    val query = """
+      SELECT picture_id, minutes_id, picture_path, time_stamp
+      FROM picture
+      ORDER BY picture_id
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        SELECT picture_id, minutes_id, picture_path, time_stamp
-        FROM picture
-        ORDER BY picture_id
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.executeQuery().use { rows ->
           return generateSequence {
             when {
@@ -27,14 +30,15 @@ class PictureService : IPictureService {
   }
 
   override fun find(pictureId: Int): Picture {
+    @Language("SQL")
+    val query = """
+      SELECT picture_id, minutes_id, picture_path, time_stamp
+      FROM picture
+      WHERE picture_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        SELECT picture_id, minutes_id, picture_path, time_stamp
-        FROM picture
-        WHERE picture_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setInt(1, pictureId)
         ps.executeQuery().use { rows ->
           return when {
@@ -47,16 +51,17 @@ class PictureService : IPictureService {
   }
 
   override fun findByUser(userId: Int): List<Picture> {
+    @Language("SQL")
+    val query = """
+      SELECT picture_id, minutes_id, picture_path, p.time_stamp
+      FROM picture p 
+      INNER JOIN minutes m USING (minutes_id)
+        WHERE user_id = ?
+        ORDER BY p.picture_id
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-          SELECT picture_id, minutes_id, picture_path, p.time_stamp
-          FROM picture p 
-          INNER JOIN minutes m USING (minutes_id)
-          WHERE user_id = ?
-          ORDER BY p.picture_id
-        """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setInt(1, userId)
         ps.executeQuery().use { rows ->
           return generateSequence {
@@ -71,15 +76,16 @@ class PictureService : IPictureService {
   }
 
   override fun findByUser(userId: Int, pictureId: Int): Picture {
+    @Language("SQL")
+    val query = """
+      SELECT picture_id, minutes_id, picture_path, p.time_stamp
+      FROM picture p 
+      INNER JOIN minutes m USING (minutes_id)
+        WHERE user_id = ? AND p.picture_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-          SELECT picture_id, minutes_id, picture_path, p.time_stamp
-          FROM picture p 
-          INNER JOIN minutes m USING (minutes_id)
-          WHERE user_id = ? AND p.picture_id = ?
-        """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setInt(1, userId)
         ps.setInt(2, pictureId)
         ps.executeQuery().use { rows ->
@@ -93,15 +99,16 @@ class PictureService : IPictureService {
   }
 
   override fun findUserIdByPicturePath(picturePath: String): Int {
+    @Language("SQL")
+    val query = """
+      SELECT m.user_id
+      FROM picture p
+      INNER JOIN minutes m USING (minutes_id)
+        WHERE picture_path = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-          SELECT m.user_id
-          FROM picture p
-          INNER JOIN minutes m USING (minutes_id)
-          WHERE picture_path = ?
-        """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.setString(1, picturePath)
         ps.executeQuery().use { rows ->
           return when {
@@ -114,13 +121,14 @@ class PictureService : IPictureService {
   }
 
   override fun insert(picture: Picture) {
+    @Language("SQL")
+    val query = """
+      INSERT INTO picture(minutes_id, picture_path, time_stamp)
+      VALUES (?, ?, current_timestamp)
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        INSERT INTO picture(minutes_id, picture_path, time_stamp)
-        VALUES (?, ?, current_timestamp)
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, picture.minutes_id)
           setString(2, picture.picture_path)
@@ -131,14 +139,15 @@ class PictureService : IPictureService {
   }
 
   override fun update(picture: Picture) {
+    @Language("SQL")
+    val query = """
+      UPDATE picture
+      SET minutes_id = ?, picture_path = ?, time_stamp = current_timestamp
+      WHERE picture_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        UPDATE picture
-        SET minutes_id = ?, picture_path = ?, time_stamp = current_timestamp
-        WHERE picture_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, picture.minutes_id)
           setString(2, picture.picture_path)
@@ -150,13 +159,14 @@ class PictureService : IPictureService {
   }
 
   override fun delete(pictureId: Int) {
+    @Language("SQL")
+    val query = """
+      DELETE FROM picture
+      WHERE picture_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-        DELETE FROM picture
-        WHERE picture_id = ?
-      """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, pictureId)
           execute()
@@ -166,19 +176,19 @@ class PictureService : IPictureService {
   }
 
   override fun delete(userId: Int, pictureId: Int): String {
+    @Language("SQL")
+    val query = """
+      DELETE FROM picture
+      WHERE picture_id = ? AND (
+        SELECT user_id
+        FROM picture p
+        INNER JOIN minutes USING (minutes_id)
+        WHERE p.picture_id = ?) = ?
+      RETURNING picture_path
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(
-        """
-          DELETE FROM picture
-          WHERE picture_id = ? AND (
-            SELECT user_id
-            FROM picture p
-            INNER JOIN minutes USING (minutes_id)
-            WHERE p.picture_id = ?
-          ) = ?
-          RETURNING picture_path
-        """
-      ).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, pictureId)
           setInt(2, pictureId)
@@ -200,42 +210,4 @@ class PictureService : IPictureService {
     rows.getString(3),
     rows.getString(4)
   )
-}
-
-
-class PictureServiceStub : IPictureService {
-  override fun find(): List<Picture> {
-    return listOf(
-      Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
-    )
-  }
-
-  override fun find(pictureId: Int): Picture {
-    return when (pictureId) {
-      1 -> Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
-      else -> Picture()
-    }
-  }
-
-  override fun findByUser(userId: Int): List<Picture> {
-    return listOf(
-      Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
-    )
-  }
-
-  override fun findByUser(userId: Int, pictureId: Int): Picture {
-    return when (pictureId) {
-      1 -> Picture(1, 1, "image.jpg", "2020-01-23 12:14:47")
-      else -> Picture()
-    }
-  }
-
-  override fun findUserIdByPicturePath(picturePath: String): Int {
-    return 1
-  }
-
-  override fun insert(picture: Picture) {}
-  override fun update(picture: Picture) {}
-  override fun delete(pictureId: Int) {}
-  override fun delete(userId: Int, pictureId: Int): String = "image.png"
 }

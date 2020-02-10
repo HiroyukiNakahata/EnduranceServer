@@ -8,7 +8,13 @@ import java.sql.SQLException
 
 class TodoService : ITodoService {
   override fun find(): List<Todo> {
-    val query = selectQuery + "ORDER BY todo_id"
+    @Language("SQL")
+    val query = """
+      SELECT todo_id, minutes_id, project_id, user_id, task_title, task_body,
+             start_time_stamp, end_time_stamp, status
+      FROM todo
+      ORDER BY todo_id
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -25,7 +31,13 @@ class TodoService : ITodoService {
   }
 
   override fun find(todoId: Int): Todo {
-    val query = selectQuery + "WHERE todo_id = ?"
+    @Language("SQL")
+    val query = """
+      SELECT todo_id, minutes_id, project_id, user_id, task_title, task_body,
+             start_time_stamp, end_time_stamp, status
+      FROM todo
+      WHERE todo_id = ?
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -49,14 +61,18 @@ class TodoService : ITodoService {
     offset: Int?
   ): List<Todo> {
 
-    val query = selectQuery + """
-      WHERE user_id = ?
-      ${projectId?.let { "AND project_id = ? " } ?: ""}
-      ${minutesId?.let { "AND minutes_id = ? " } ?: ""}
-      ${status?.let { "AND status = ? " } ?: ""}
-      ORDER BY todo_id
-      ${limit?.let { "LIMIT ? " } ?: ""}
-      ${offset?.let { "OFFSET ? " } ?: ""}
+    @Language("SQL")
+    val query = """
+      SELECT todo_id, minutes_id, project_id, user_id, task_title, task_body,
+             start_time_stamp, end_time_stamp, status
+      FROM todo
+        WHERE user_id = ?
+        ${projectId?.let { "AND project_id = ? " } ?: ""}
+        ${minutesId?.let { "AND minutes_id = ? " } ?: ""}
+        ${status?.let { "AND status = ? " } ?: ""}
+          ORDER BY todo_id
+          ${limit?.let { "LIMIT ? " } ?: ""}
+          ${offset?.let { "OFFSET ? " } ?: ""}
     """
 
     HikariService.getConnection().use { con ->
@@ -83,11 +99,14 @@ class TodoService : ITodoService {
   }
 
   override fun count(userId: Int, projectId: Int?, minutesId: Int?, status: Boolean?): Int {
-    val query = countQuery + """
-      WHERE user_id = ?
-      ${projectId?.let { "AND project_id = ? " } ?: ""}
-      ${minutesId?.let { "AND minutes_id = ? " } ?: ""}
-      ${status?.let { "AND status = ?" } ?: ""}
+    @Language("SQL")
+    val query = """
+      SELECT COUNT(*)
+      FROM todo
+        WHERE user_id = ?
+        ${projectId?.let { "AND project_id = ? " } ?: ""}
+        ${minutesId?.let { "AND minutes_id = ? " } ?: ""}
+        ${status?.let { "AND status = ?" } ?: ""}
     """
 
     HikariService.getConnection().use { con ->
@@ -110,6 +129,14 @@ class TodoService : ITodoService {
       }
     }
   }
+
+  @Language("SQL")
+  private val insertQuery = """
+    INSERT INTO todo(minutes_id, project_id, user_id, task_title, task_body,
+        start_time_stamp, end_time_stamp, status) 
+    VALUES (?, ?, ?, ?, ?, 
+      to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), ?)
+  """
 
   override fun insert(todo: Todo) {
     HikariService.getConnection().use { con ->
@@ -158,8 +185,22 @@ class TodoService : ITodoService {
   }
 
   override fun update(todo: Todo) {
+    @Language("SQL")
+    val query = """
+      UPDATE todo
+      SET minutes_id = ?,
+          project_id = ?,
+          user_id = ?,
+          task_title = ?,
+          task_body = ?,
+          start_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
+          end_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
+          status = ?
+      WHERE todo_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(updateQuery).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, todo.minutes_id)
           setInt(2, todo.project_id)
@@ -177,8 +218,14 @@ class TodoService : ITodoService {
   }
 
   override fun delete(todoId: Int) {
+    @Language("SQL")
+    val query = """
+      DELETE FROM todo
+      WHERE todo_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(deleteQuery).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, todoId)
           execute()
@@ -188,7 +235,11 @@ class TodoService : ITodoService {
   }
 
   override fun delete(todoId: Int, userId: Int) {
-    val query = deleteQuery + "AND user_id = ?"
+    @Language("SQL")
+    val query = """
+      DELETE FROM todo
+      WHERE todo_id = ? AND user_id = ?
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -212,126 +263,4 @@ class TodoService : ITodoService {
     rows.getString(8),
     rows.getBoolean(9)
   )
-
-
-  @Language("SQL")
-  private val selectQuery = """
-    SELECT todo_id,
-           minutes_id,
-           project_id,
-           user_id,
-           task_title,
-           task_body,
-           start_time_stamp,
-           end_time_stamp,
-           status
-    FROM todo
-  """
-
-  @Language("SQL")
-  private val countQuery = """
-    SELECT COUNT(*)
-    FROM todo
-  """
-
-  @Language("SQL")
-  private val insertQuery = """
-    INSERT INTO todo(
-        minutes_id,
-        project_id,
-        user_id,
-        task_title,
-        task_body,
-        start_time_stamp,
-        end_time_stamp,
-        status) 
-    VALUES (?, ?, ?, ?, ?, 
-    to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'), 
-    to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
-    ?)
-  """
-
-  @Language("SQL")
-  private val updateQuery = """
-    UPDATE todo
-    SET minutes_id = ?,
-        project_id = ?,
-        user_id = ?,
-        task_title = ?,
-        task_body = ?,
-        start_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
-        end_time_stamp = to_timestamp(?, 'YYYY-MM-DD HH24:MI:SS'),
-        status = ?
-    WHERE todo_id = ?
-  """
-
-  @Language("SQL")
-  private val deleteQuery = """
-    DELETE FROM todo
-    WHERE todo_id = ?
-  """
-}
-
-
-class TodoServiceStub : ITodoService {
-  override fun find(): List<Todo> {
-    return listOf(
-      Todo(
-        1, 1, 1, 1, "四次元方程式を解く", "時空間４次元を表現する数式",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      ),
-      Todo(
-        2, 3, 3, 1, "先行事例調査", "海外論文のリサーチ",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      ),
-      Todo(
-        3, 3, 3, 1, "経緯をまとめる", "報告書作成",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      )
-    )
-  }
-
-  override fun find(todoId: Int): Todo {
-    return when (todoId) {
-      1 -> Todo(
-        1, 1, 1, 1, "四次元方程式を解く", "時空間４次元を表現する数式",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      )
-      else -> Todo()
-    }
-  }
-
-  override fun findByUserAndQuery(
-    userId: Int,
-    projectId: Int?,
-    minutesId: Int?,
-    status: Boolean?,
-    limit: Int?,
-    offset: Int?
-  ): List<Todo> {
-    return listOf(
-      Todo(
-        1, 1, 1, 1, "四次元方程式を解く", "時空間４次元を表現する数式",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      ),
-      Todo(
-        2, 3, 3, 1, "先行事例調査", "海外論文のリサーチ",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      ),
-      Todo(
-        3, 3, 3, 1, "経緯をまとめる", "報告書作成",
-        "2020-01-29 00:00:00+09", "2020-01-29 00:00:00+09", false
-      )
-    )
-  }
-
-  override fun count(userId: Int, projectId: Int?, minutesId: Int?, status: Boolean?): Int {
-    return 3
-  }
-
-  override fun insert(todo: Todo) {}
-  override fun insertMulti(todoList: List<Todo>) {}
-  override fun update(todo: Todo) {}
-  override fun delete(todoId: Int) {}
-  override fun delete(todoId: Int, userId: Int) {}
 }

@@ -26,14 +26,13 @@ fun Route.loginHandler(
 
       when (fromDb.second) {
         0 -> throw AuthenticationException()
-      }
-
-      when (userHash) {
-        fromDb.first -> {
-          val token = JwtAuth.createToken(fromDb.second, System.currentTimeMillis())
-          call.respond(mapOf("token" to token, "id" to fromDb.second))
+        else -> when (fromDb.first) {
+          userHash -> {
+            val token = JwtAuth.createToken(fromDb.second, System.currentTimeMillis())
+            call.respond(mapOf("token" to token, "id" to fromDb.second))
+          }
+          else -> call.respond(HttpStatusCode.Unauthorized)
         }
-        else -> call.respond(HttpStatusCode.Unauthorized)
       }
     }
   }

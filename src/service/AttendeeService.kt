@@ -8,7 +8,12 @@ import java.sql.SQLException
 
 class AttendeeService : IAttendeeService {
   override fun find(): List<Attendee> {
-    val query = selectQuery + "ORDER BY attendee_id"
+    @Language("SQL")
+    val query = """
+      SELECT attendee_id, minutes_id, attendee_name, organization
+      FROM attendee
+      ORDER BY attendee_id
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -25,7 +30,12 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun find(attendeeId: Int): Attendee {
-    val query = selectQuery + "WHERE attendee_id = ?"
+    @Language("SQL")
+    val query = """
+      SELECT attendee_id, minutes_id, attendee_name, organization
+      FROM attendee
+      WHERE attendee_id = ?
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -41,7 +51,11 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun findByUser(userId: Int): List<Attendee> {
-    val query = selectQueryJoin + """
+    @Language("SQL")
+    val query = """
+      SELECT attendee_id, minutes_id, attendee_name, organization
+      FROM attendee
+       INNER JOIN minutes m USING (minutes_id) 
         WHERE m.user_id = ?
         ORDER BY attendee_id
     """
@@ -62,7 +76,13 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun findByUser(userId: Int, attendeeId: Int): Attendee {
-    val query = selectQueryJoin + "WHERE m.user_id = ? AND attendee_id = ?"
+    @Language("SQL")
+    val query = """
+      SELECT attendee_id, minutes_id, attendee_name, organization
+      FROM attendee
+       INNER JOIN minutes m USING (minutes_id)
+       WHERE m.user_id = ? AND attendee_id = ?
+    """
 
     HikariService.getConnection().use { con ->
       con.prepareStatement(query).use { ps ->
@@ -77,6 +97,12 @@ class AttendeeService : IAttendeeService {
       }
     }
   }
+
+  @Language("SQL")
+  private val insertQuery = """
+    INSERT INTO attendee(minutes_id, attendee_name, organization) 
+    VALUES (?, ?, ?)
+  """
 
   override fun insert(attendee: Attendee) {
     HikariService.getConnection().use { con ->
@@ -115,8 +141,15 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun update(attendee: Attendee) {
+    @Language("SQL")
+    val query = """
+      UPDATE attendee
+      SET minutes_id = ?, attendee_name = ?, organization = ?
+      WHERE attendee_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(updateQuery).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, attendee.minutes_id)
           setString(2, attendee.attendee_name)
@@ -129,8 +162,14 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun delete(attendeeId: Int) {
+    @Language("SQL")
+    val query = """
+      DELETE FROM attendee
+      WHERE attendee_id = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(deleteQuery).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, attendeeId)
           execute()
@@ -140,8 +179,19 @@ class AttendeeService : IAttendeeService {
   }
 
   override fun delete(userId: Int, attendeeId: Int) {
+    @Language("SQL")
+    val query = """
+      DELETE FROM attendee
+      WHERE attendee_id = ? AND (
+      SELECT user_id
+       FROM attendee
+        INNER JOIN minutes
+         USING (minutes_id)
+         WHERE attendee_id = ?) = ?
+    """
+
     HikariService.getConnection().use { con ->
-      con.prepareStatement(deleteQueryJoin).use { ps ->
+      con.prepareStatement(query).use { ps ->
         ps.run {
           setInt(1, attendeeId)
           setInt(2, attendeeId)
@@ -158,103 +208,4 @@ class AttendeeService : IAttendeeService {
     rows.getString(3),
     rows.getString(4)
   )
-
-
-  @Language("SQL")
-  private val selectQuery = """
-    SELECT attendee_id,
-           minutes_id,
-           attendee_name,
-           organization
-    FROM attendee
-  """
-
-  @Language("SQL")
-  private val selectQueryJoin = """
-    SELECT attendee_id,
-           minutes_id,
-           attendee_name,
-           organization
-    FROM attendee
-     INNER JOIN minutes m USING (minutes_id)
-  """
-
-  @Language("SQL")
-  private val insertQuery = """
-    INSERT INTO attendee(minutes_id, attendee_name, organization) 
-    VALUES (?, ?, ?)
-  """
-
-  @Language("SQL")
-  private val updateQuery = """
-    UPDATE attendee
-    SET minutes_id = ?, attendee_name = ?, organization = ?
-    WHERE attendee_id = ?
-  """
-
-  @Language("SQL")
-  private val deleteQuery = """
-    DELETE FROM attendee
-    WHERE attendee_id = ?
-  """
-
-  @Language("SQL")
-  private val deleteQueryJoin = """
-    DELETE FROM attendee
-    WHERE attendee_id = ? AND (
-    SELECT user_id
-     FROM attendee
-      INNER JOIN minutes
-       USING (minutes_id)
-       WHERE attendee_id = ?) = ?
-  """
-}
-
-
-class AttendeeServiceStub : IAttendeeService {
-  override fun find(): List<Attendee> {
-    return listOf(
-      Attendee(
-        1, 1, "sample", "sample.inc"
-      ),
-      Attendee(
-        2, 3, "testAttendee", "testAttendee.inc"
-      )
-    )
-  }
-
-  override fun find(attendeeId: Int): Attendee {
-    return when (attendeeId) {
-      1 -> Attendee(
-        1, 1, "sample", "sample.inc"
-      )
-      else -> Attendee()
-    }
-  }
-
-  override fun findByUser(userId: Int): List<Attendee> {
-    return listOf(
-      Attendee(
-        1, 1, "sample", "sample.inc"
-      ),
-      Attendee(
-        2, 3, "testAttendee", "testAttendee.inc"
-      )
-    )
-  }
-
-  override fun findByUser(userId: Int, attendeeId: Int): Attendee {
-    return when (attendeeId) {
-      1 -> Attendee(
-        1, 1, "sample", "sample.inc"
-      )
-      else -> Attendee()
-    }
-  }
-
-  override fun insert(attendee: Attendee) {}
-  override fun insertMulti(attendees: List<Attendee>) {}
-  override fun update(attendee: Attendee) {}
-  override fun delete(attendeeId: Int) {}
-  override fun delete(userId: Int, attendeeId: Int) {}
 }
